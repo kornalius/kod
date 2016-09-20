@@ -1,0 +1,13 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"kod.sublime-project",
+				"kod.sublime-workspace"
+			],
+			"path": "."
+		}
+	]
+}

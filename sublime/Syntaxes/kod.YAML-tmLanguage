@@ -1,0 +1,83 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+name: kod
+scopeName: source.kod
+fileTypes: [.kod]
+uuid: c99f17c6-9642-4847-b3ec-16e0580ebe16
+
+patterns:
+
+  # foldingStartMarker: ^\s*(if|else|for|while)\b
+  # foldingStopMarker: ^\s*end\b}
+
+  - name: keyword.control
+    match: (if|else|for|end|while|break|return)\b
+
+  - name: keyword.control
+    match: (i8|int8||u8|byte|uint8|ubyte)\b
+
+  - name: keyword.control
+    match: (i16|int16|int|short|word|u16|uint16|uint|ushort|uword)\b
+
+  - name: keyword.control
+    match: (i32|int32|long|dword|u32|uint32|ulong|udword|let)\b
+
+  - name: keyword.control
+    match: (f32|float|float32)\b
+
+  - name: keyword.control
+    match: (f64|float64|double)\b
+
+  - name: keyword.control
+    match: (string)\b
+
+  - name: support.constant
+    match: \b(true|false)\b
+
+  - name: keyword.other
+    match: (print)\b
+
+  - name: keyword.operator
+    match: (=)[^=>]
+
+  - name: keyword.operator
+    match: (=>)
+
+  - name: keyword.operator
+    match: (==|\!=|<|<=|>|>=)
+
+  - name: keyword.operator
+    match: (\+|\-|\/|\*|\!|\&|\|)
+
+  - name: punctuation.definition
+    match: (\[|\]|\{|\}|\(|\)|\,)
+
+  - name: comment.line
+    match: ;[^\r\n]*
+
+  - name: entity.name.function
+    match: ([A-Za-z_][A-Za-z0-9_\.]*)
+
+  - name: storage.type.variable
+    match: ([A-Za-z_][A-Za-z0-9_\.]*)
+
+  - name: keyword.other
+    match: \.(include|bounds|debug)\b
+
+  - name: string.quoted.double
+    begin: '"'
+    end: '"'
+
+  - name: constant.character.escape
+    match: \\.
+
+  - name: constant.character
+    match: \'.\'
+
+  - name: constant.numeric.hex
+    match: \$[0-9a-fA-F]+
+
+  - name: constant.numeric.hex
+    match: 0x[0-9a-fA-F]+
+
+  - name: constant.numeric.decimal
+    match: \b\d+\b
