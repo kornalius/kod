@@ -4,7 +4,7 @@ import { define_property } from './property.js'
 
 export class Struct {
 
-  constructor (mem, offset, fmt) {
+  constructor (mem, fmt, offset) {
     offset = offset || this.mem.alloc(this.size(fmt))
     this.mem = mem
     this.format = fmt
