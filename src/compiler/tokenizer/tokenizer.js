@@ -9,7 +9,6 @@ Tokenizer = class {
       eol: /^[\r\n]/,
       comma: /^,/,
       colon: /^:/,
-      semi: /^;/,
 
       comment: /^;([^\r\n]*)/,
 
@@ -93,6 +92,14 @@ Tokenizer = class {
 
   next () {
     let { token, offset, len } = this.peek()
+    while (token._type === 'comment') {
+      let t = this.peek()
+      token = t.token
+      offset = t.offset
+      len = t.len
+      this.offset = offset
+      this.column += len + 1
+    }
     if (token) {
       this.tokens.push(token)
       this.offset = offset

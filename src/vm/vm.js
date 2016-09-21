@@ -5,6 +5,7 @@ import { Transpiler } from '../compiler/transpiler.js'
 import { Memory, MemoryManager } from './mem.js'
 import { Interrupt } from './int.js'
 import { Debugger } from './dbg.js'
+import { define_property } from './prop.js'
 
 export var VM
 
@@ -28,6 +29,8 @@ VM = class {
 
     this.boot(true)
 
+    this.def_prop = define_property
+
     this.tickBound = this.tick.bind(this)
     PIXI.ticker.shared.add(this.tickBound)
   }
@@ -37,13 +40,6 @@ VM = class {
 
     if (cold) {
       this.mem.clear()
-
-      // Check for littleEndian
-      let b = new ArrayBuffer(4)
-      let a = new Uint32Array(b)
-      let c = new Uint8Array(b)
-      a[0] = 0xdeadbeef
-      this.littleEndian = c[0] === 0xef
     }
   }
 

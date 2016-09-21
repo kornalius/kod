@@ -5,7 +5,7 @@ print i j
 
 if 30 > 20
   print "greater"
-  i = 23
+  ; i = 23
   if (i > 20)
     print "a"
   else
@@ -24,3 +24,5 @@ end
 let f => (float a, int b, byte c)
   print a / b + c
 end
+
+f(10, 20, 30)

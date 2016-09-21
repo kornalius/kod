@@ -5,6 +5,7 @@ export var comma
 export var string
 export var eol
 export var indent
+export var scope
 export var l
 export var i
 export var s
@@ -61,7 +62,7 @@ string = value => '\'' + value.replace(/'/g, '\'') + '\''
 comma = nodes => {
   let a = []
   for (let n of nodes) {
-    a.push(e(n))
+    a.push(n instanceof Node ? e(n) : n)
   }
   return a.join(', ')
 }
@@ -69,6 +70,15 @@ comma = nodes => {
 eol = s => s ? ';' : ''
 
 indent = 0
+
+scope = (node, dot = false) => {
+  let reserved = node.token ? node.token._reserved : node._reserved
+  let r = reserved ? '' : node._global || node.token && node.token._global ? 'global_scope' : 'scope'
+  if (r !== '' && dot) {
+    r += '.'
+  }
+  return r
+}
 
 // generate line
 l = str => str + (!_.endsWith(str, '\n') ? '\n' : '')
@@ -91,9 +101,9 @@ s = node => {
     let dat = {}
 
     if (node.is('assign')) {
-      if (node.def) {
-        tmpl = 'var #{id} = alloc(#{type}, #{dimensions}, #{expr});'
-        dat = { id: e(d.id), type: e(d.type), dimensions: d.dimensions ? e(d.dimensions) : '1', expr: e(d.expr) }
+      if (node._def) {
+        tmpl = 'def_prop(#{scope}, \'#{id}\', _vm.mem, alloc(#{type}, #{dimensions}, #{expr}), #{type}, #{dimensions});'
+        dat = { scope: scope(node), id: d.id.value, type: e(d.type), dimensions: d.dimensions ? e(d.dimensions) : '1', expr: e(d.expr) }
       }
       else {
         tmpl = '#{id} = #{expr};'
@@ -101,15 +111,13 @@ s = node => {
       }
     }
     else if (node.is('fn_assign')) {
-      tmpl = '#{id} = function (#{args}) #{body}'
-      dat = { id: e(d.id), args: e(_.map(d.args, a => a.data.id), ', '), body: b(d.body, true) }
-      if (node.def) {
-        tmpl = 'var ' + tmpl
-      }
+      tmpl = '#{scope}#{id} = function (#{args}) #{body}'
+      let args = e(_.map(d.args, a => a.data.id), ', ')
+      dat = { scope: scope(node, true), id: d.id.value, args, body: b(d.body, true, args) }
     }
     else if (node.is('fn')) {
-      tmpl = '#{fn}(#{args});'
-      dat = { fn: node.value, args: e(d.args, ', ') }
+      tmpl = '#{scope}#{fn}(#{args});'
+      dat = { scope: scope(node, true), fn: node.value, args: e(d.args, ', ') }
     }
     else if (node.is('if')) {
       tmpl = 'if (#{expr}) #{true_body}#{false_body}'
@@ -137,10 +145,14 @@ s = node => {
 }
 
 // generate indented block of statement(s)
-b = (node, semi = false) => {
+b = (node, semi = false, args_def = null) => {
   let str = l('{')
 
   indent++
+
+  if (args_def) {
+    str += l(i(_.template('var scope = {#{args}};')({ args: args_def })))
+  }
 
   if (_.isArray(node)) {
     for (let n of node) {
@@ -174,17 +186,21 @@ e = (node, separator) => {
     let tmpl = ''
     let dat = {}
 
-    if (node.is('fn')) {
-      tmpl = '#{fn}(#{args})'
-      dat = { fn: node.value, args: e(d.args, ', ') }
+    if (node.is('fn') && !node._def) {
+      tmpl = '#{scope}#{fn}(#{args})'
+      dat = { scope: scope(node, true), fn: node.value, args: e(d.args, ', ') }
     }
     else if (node.is(['math', 'logic', 'comp'])) {
       tmpl = '#{left} #{op} #{right}'
       dat = { op: node.value, left: e(d.left), right: e(d.right) }
     }
-    else if (node.is('type') || node.is('char') || node.is('string')) {
+    else if (node.is(['type', 'char', 'string'])) {
       tmpl = '#{value}'
       dat = { value: string(node.is('type') ? token_data_type[node.value] : node.value) }
+    }
+    else if (node.is(['var', 'fn'])) {
+      tmpl = '#{scope}#{value}'
+      dat = { scope: scope(node, true), value: node.value }
     }
     else {
       tmpl = '#{value}'
@@ -239,6 +255,8 @@ Transpiler = class {
     this.writeln('var alloc = _vm.mm.alloc.bind(_vm.mm);')
     this.writeln('var free = _vm.mm.free.bind(_vm.mm);')
     this.writeln('var print = console.log.bind(console);')
+    this.writeln('var def_prop = _vm.def_prop.bind(_vm);')
+    this.writeln('var global_scope = {};')
     this.writeln()
   }
 

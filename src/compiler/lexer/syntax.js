@@ -188,13 +188,13 @@ var_assign = (lexer, type, allow_fn = true, args_def = false, allow_dimensions =
     dimensions = array_def(lexer)
   }
   node = new Node(lexer, lexer.token, { type, id, dimensions })
+  node.data.id._def = true
   if (lexer.is('assign')) {
     lexer.next()
     node.data.expr = expr(lexer)
   }
   else if (allow_fn && lexer.is('fn_assign')) {
     lexer.frames.start(node.data.id.value)
-    lexer.frames.add('fn', node)
     lexer.next()
     if (lexer.is('open_paren')) {
       lexer.next()
@@ -222,6 +222,6 @@ type_def = (lexer, allow_fn = true, args_def = false) => {
   lexer.next()
   let node = var_assign(lexer, type, allow_fn, args_def, true)
   lexer.frames.add(node.is('fn_assign') ? 'fn' : 'var', node)
-  node.def = true
+  node._def = true
   return node
 }

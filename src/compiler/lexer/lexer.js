@@ -16,8 +16,8 @@ Lexer = class {
   reset () {
     this.errors = 0
     this.offset = 0
-    this.frames.reset()
     this.nodes = []
+    this.frames.reset()
   }
 
   validOffset (offset) { return offset >= 0 && offset < this.length }

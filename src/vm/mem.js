@@ -1,5 +1,5 @@
 import pretty from 'pretty-bytes'
-import { hex, buffer_dump, littleEndian } from '../globals.js'
+import { hex, buffer_dump } from '../globals.js'
 
 export var data_type_sizes
 export var data_type_size
@@ -51,6 +51,13 @@ data_array_classes = {
 Memory = class {
 
   constructor (buffer, offset, size) {
+    // Check for littleEndian
+    let b = new ArrayBuffer(4)
+    let a = new Uint32Array(b)
+    let c = new Uint8Array(b)
+    a[0] = 0xdeadbeef
+    this.littleEndian = c[0] === 0xef
+
     if (_.isNumber(buffer)) {
       if (_.isNumber(offset)) {
         size = offset
@@ -113,7 +120,7 @@ Memory = class {
       return str
     }
     else {
-      return this.view_fn('get', type)(offset, littleEndian)
+      return this.view_fn('get', type).call(this.view, offset, this.littleEndian)
     }
   }
 
@@ -129,7 +136,7 @@ Memory = class {
       this.fill(0, offset + a.length, size - a.length)
     }
     else {
-      this.view_fn('set', type)(offset, value, littleEndian)
+      this.view_fn('set', type).call(this.view, offset, value, this.littleEndian)
     }
   }
 
@@ -196,7 +203,6 @@ MemoryManager = class {
   info () {
     let used = 0
     for (let b of this._blocks) {
-      debugger;
       used += b.used ? b.size : 0
     }
     return { avail: this.size, used, free: this.size - used }

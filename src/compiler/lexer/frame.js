@@ -5,36 +5,43 @@ export var FrameItem
 
 Frames = class {
 
-  constructor (parent) {
-    this.parent = parent
+  constructor () {
     this.reset()
   }
 
   reset () {
     this.list = []
-    this.local = null
-    this.global = new Frame(this)
+    this.current = null
+    this.global = null
   }
 
   start (frame_type) {
-    if (this.local) {
-      this.list.push(this.local)
+    if (!this.global) {
+      this.global = new Frame(this)
+      this.list.push(this.global)
+      this.current = this.global
+      return this.current
     }
-    this.local = new Frame(this, frame_type)
-    return this.local
+    if (this.current && this.current.is_local) {
+      this.list.unshift(this.current)
+    }
+    this.current = new Frame(this, frame_type)
+    return this.current
   }
 
   end () {
-    this.local = this.list.length ? this.list.pop() : null
-    return this.local
+    if (this.current.is_local) {
+      this.current = this.list.shift()
+    }
+    return this.current
   }
 
-  add (item_type, node) { return this.local.add(item_type, node) }
+  add (item_type, node) { return this.current.add(item_type, node) }
 
   exists (name) {
     let i = null
-    if (this.local) {
-      i = this.local.exists(name)
+    if (this.current) {
+      i = this.current.exists(name)
       if (!i) {
         i = this.global.exists(name)
       }
@@ -72,19 +79,28 @@ FrameItem = class {
 
   get is_fn () { return this.item_type === 'fn' }
 
+  get is_local () { return this.frame.is_local }
+
+  get is_global () { return this.frame.is_global }
+
 }
 
 Frame = class {
 
-  constructor (parent, frame_type) {
-    this.parent = parent
+  constructor (frames, frame_type) {
+    this.frames = frames
     this.frame_type = frame_type
     this.items = []
   }
 
+  get is_local () { return this !== this.frames.global }
+
+  get is_global () { return this === this.frames.global }
+
   add (item_type, node) {
     let i = new FrameItem(this, item_type, node)
     this.items.push(i)
+    node._global = this.is_global
     return i
   }
 
