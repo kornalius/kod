@@ -24,8 +24,9 @@ export var fn_call
 export var fn_args_def
 
 export var var_assign
+export var fn_assign
 export var array_def
-export var type_def
+export var var_def
 
 loop_while = (lexer, fn, args, matches, end, end_next, skip) => {
   let nodes = []
@@ -104,8 +105,9 @@ while_statement = lexer => {
 }
 
 statement = lexer => {
-  if (lexer.match(['type', 'id'])) { return type_def(lexer) } // variable or function definition
-  else if (lexer.is('var')) { return var_assign(lexer) } // variable or function assignment
+  if (lexer.match(['let', 'id'])) { return var_def(lexer) } // variable or function definition
+  else if (lexer.match(['var', 'assign'])) { return var_assign(lexer) } // variable assignment
+  else if (lexer.match(['var', 'fn_assign'])) { return fn_assign(lexer) } // function assignment
   else if (lexer.is('if')) { return if_statement(lexer) } // if block
   else if (lexer.is('while')) { return while_statement(lexer) } // while block
   else if (lexer.is('fn')) { return fn_call(lexer) } // function call
@@ -176,36 +178,7 @@ fn_call = lexer => {
   return node
 }
 
-fn_args_def = lexer => loop_while(lexer, type_def, [false, true], ['type', 'id'], null, false, 'comma')
-
-var_assign = (lexer, type, allow_fn = true, args_def = false, allow_dimensions = false) => {
-  let node = null
-  let dimensions = null
-  let id = lexer.token
-  lexer.next()
-  // Array dimensions definition
-  if (allow_dimensions && lexer.is('open_bracket')) {
-    dimensions = array_def(lexer)
-  }
-  node = new Node(lexer, lexer.token, { type, id, dimensions })
-  node.data.id._def = true
-  if (lexer.is('assign')) {
-    lexer.next()
-    node.data.expr = expr(lexer)
-  }
-  else if (allow_fn && lexer.is('fn_assign')) {
-    lexer.frames.start(node.data.id.value)
-    lexer.next()
-    if (lexer.is('open_paren')) {
-      lexer.next()
-      node.data.args = fn_args_def(lexer)
-      lexer.expect('close_paren')
-    }
-    node.data.body = block(lexer, 'end', true)
-    lexer.frames.end()
-  }
-  return node
-}
+fn_args_def = lexer => loop_while(lexer, var_def, [false, true], ['let', 'id'], null, false, 'comma')
 
 array_def = lexer => {
   let nodes = []
@@ -217,11 +190,62 @@ array_def = lexer => {
   return nodes
 }
 
-type_def = (lexer, allow_fn = true, args_def = false) => {
-  let type = lexer.token
+var_assign = (lexer, id, dimensions) => {
+  if (!id) {
+    id = lexer.token
+    lexer.next()
+  }
+  let node = new Node(lexer, lexer.token, { id })
   lexer.next()
-  let node = var_assign(lexer, type, allow_fn, args_def, true)
-  lexer.frames.add(node.is('fn_assign') ? 'fn' : 'var', node)
+  node.data.expr = expr(lexer)
+  return node
+}
+
+fn_assign = (lexer, id) => {
+  if (!id) {
+    id = lexer.token
+    lexer.next()
+  }
+  let node = new Node(lexer, lexer.token, { id })
+  lexer.frames.start(node.data.id.value)
+  lexer.next()
+  if (lexer.is('open_paren')) {
+    lexer.next()
+    node.data.args = fn_args_def(lexer)
+    lexer.expect('close_paren')
+  }
+  node.data.body = block(lexer, 'end', true)
+  lexer.frames.end()
+  return node
+}
+
+var_def = (lexer, allow_fn = true, allow_dimensions = false) => {
+  let node = null
+  let token = lexer.token
+  lexer.next()
+  let dimensions = null
+  let id = lexer.token
+  id._def = true
+  lexer.next()
+  // Array dimensions definition
+  if (allow_dimensions && lexer.is('open_bracket')) {
+    dimensions = array_def(lexer)
+  }
+  if (lexer.is('assign')) {
+    node = var_assign(lexer, id, dimensions)
+    lexer.frames.add('var', node)
+  }
+  else if (lexer.is('fn_assign')) {
+    if (!allow_fn) {
+      error(this, lexer.token, 'function definition is not allowed here')
+    }
+    node = fn_assign(lexer, id, dimensions)
+    lexer.frames.add('fn', node)
+  }
+  else {
+    node = new Node(lexer, token, { id, dimensions })
+    lexer.frames.add('var', node)
+  }
   node._def = true
   return node
 }

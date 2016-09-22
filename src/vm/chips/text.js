@@ -134,42 +134,58 @@ export class Text {
 
     this.fnt_size = this.chr_count * this.chr_size
 
+    this.fnt_data = new Uint8Array(this.fnt_size)
+    this.txt_data = new Uint8Array(this.txt_size)
+
     this.publicize([
-      { name: 'draw', value: () => this.txt_draw(...arguments) },
-      { name: 'txt_refresh', value: () => this.txt_refresh(...arguments) },
-      { name: 'idx', value: () => this.txt_index(...arguments) },
-      { name: 'lin', value: () => this.txt_line(...arguments) },
-      { name: 'at', value: () => this.txt_char_at(...arguments) },
-      { name: 'put', value: () => this.txt_put_char(...arguments) },
-      { name: 'print', value: () => this.txt_print(...arguments) },
-      { name: 'pos', value: () => this.txt_pos(...arguments) },
-      { name: 'to', value: () => this.txt_move_to(...arguments) },
-      { name: 'by', value: () => this.txt_move_by(...arguments) },
-      { name: 'bol', value: () => this.txt_bol(...arguments) },
-      { name: 'eol', value: () => this.txt_eol(...arguments) },
-      { name: 'bos', value: () => this.txt_bos(...arguments) },
-      { name: 'eos', value: () => this.txt_eos(...arguments) },
-      { name: 'bs', value: () => this.txt_bs(...arguments) },
-      { name: 'cr', value: () => this.txt_cr(...arguments) },
-      { name: 'lf', value: () => this.txt_lf(...arguments) },
-      { name: 'up', value: () => this.txt_up(...arguments) },
-      { name: 'left', value: () => this.txt_left(...arguments) },
-      { name: 'down', value: () => this.txt_down(...arguments) },
-      { name: 'right', value: () => this.txt_right(...arguments) },
-      { name: 'clr', value: () => this.txt_clear(...arguments) },
-      { name: 'clr_eol', value: () => this.txt_clear_eol(...arguments) },
-      { name: 'clr_os', value: () => this.txt_clear_eos(...arguments) },
-      { name: 'clr_bl', value: () => this.txt_clear_bol(...arguments) },
-      { name: 'clr_bs', value: () => this.txt_clear_bos(...arguments) },
-      { name: 'cpy_lin', value: () => this.txt_copy_lin(...arguments) },
-      { name: 'cpy_col', value: () => this.txt_copy_col(...arguments) },
-      { name: 'erase_lin', value: () => this.txt_erase_lin(...arguments) },
-      { name: 'erase_col', value: () => this.txt_erase_col(...arguments) },
-      { name: 'scroll', value: () => this.txt_scroll(...arguments) },
+      { name: 'chr_count' },
+      { name: 'chr_width' },
+      { name: 'chr_height' },
+      { name: 'chr_offset_x' },
+      { name: 'chr_offset_y' },
+      { name: 'chr_size' },
+      { name: 'txt_width' },
+      { name: 'txt_height' },
+      { name: 'txt_size' },
+      { name: 'fnt_size' },
+      { name: 'fnt_data' },
+      { name: 'txt_data' },
+
+      { name: 'draw', value: 'txt_draw' },
+      { name: 'txt_refresh', value: 'txt_refresh' },
+      { name: 'idx', value: 'txt_index' },
+      { name: 'lin', value: 'txt_line' },
+      { name: 'at', value: 'txt_char_at' },
+      { name: 'put', value: 'txt_put_char' },
+      { name: 'print', value: 'txt_print' },
+      { name: 'pos', value: 'txt_pos' },
+      { name: 'to', value: 'txt_move_to' },
+      { name: 'by', value: 'txt_move_by' },
+      { name: 'bol', value: 'txt_bol' },
+      { name: 'eol', value: 'txt_eol' },
+      { name: 'bos', value: 'txt_bos' },
+      { name: 'eos', value: 'txt_eos' },
+      { name: 'bs', value: 'txt_bs' },
+      { name: 'cr', value: 'txt_cr' },
+      { name: 'lf', value: 'txt_lf' },
+      { name: 'up', value: 'txt_up' },
+      { name: 'left', value: 'txt_left' },
+      { name: 'down', value: 'txt_down' },
+      { name: 'right', value: 'txt_right' },
+      { name: 'clr', value: 'txt_clear' },
+      { name: 'clr_eol', value: 'txt_clear_eol' },
+      { name: 'clr_os', value: 'txt_clear_eos' },
+      { name: 'clr_bl', value: 'txt_clear_bol' },
+      { name: 'clr_bs', value: 'txt_clear_bos' },
+      { name: 'cpy_lin', value: 'txt_copy_lin' },
+      { name: 'cpy_col', value: 'txt_copy_col' },
+      { name: 'erase_lin', value: 'txt_erase_lin' },
+      { name: 'erase_col', value: 'txt_erase_col' },
+      { name: 'scroll', value: 'txt_scroll' },
     ])
   }
 
-  txt_tick (t) {
+  txt_tick (t, delta) {
     if (this.txt_force_update) {
       this.txt_draw()
       this.txt_force_update = false
@@ -177,18 +193,7 @@ export class Text {
   }
 
   txt_reset () {
-    this.fnt_top = this._fonts.mem_top
-    this.fnt_bottom = this._fonts.mem_bottom
-
-    this.fnt_array = new Uint8Array(_vm.mem_buffer, this.fnt_top, this.fnt_size)
-
-    this.txt_top = this._text.mem_top
-    this.txt_bottom = this._text.mem_bottom
-
-    this.txt_array = new Uint8Array(_vm.mem_buffer, this.txt_top, this.txt_size)
-
     this.txt_force_update = false
-
     this.txt_clear()
   }
 
@@ -209,7 +214,7 @@ export class Text {
     let fnt_sz = this.chr_size
     let osx = this.chr_offset_x
 
-    var mem = this.fnt_array
+    var mem = this.fnt_data
 
     for (let k in b.glyphs) {
       let g = b.glyphs[k]
@@ -236,8 +241,8 @@ export class Text {
     let w = this.vid_width
     let fnt_sz = this.chr_size
 
-    var fnt_mem = this.fnt_array
-    var txt_mem = this.txt_array
+    var fnt_mem = this.fnt_data
+    var txt_mem = this.txt_data
 
     let idx = 0
     for (let y = 0; y < th; y++) {
@@ -279,7 +284,7 @@ export class Text {
 
   txt_char_at (x, y) {
     let tidx = this.txt_index(x, y)
-    let mem = this.txt_array
+    let mem = this.txt_data
     return { ch: mem[tidx], fg: mem[tidx + 1], bg: mem[tidx + 2] }
   }
 
@@ -295,7 +300,7 @@ export class Text {
     }
 
     let { x, y } = this.txt_pos()
-    this.txt_array.set([ch.charCodeAt(0), fg, bg], this.txt_index(x, y))
+    this.txt_data.set([ch.charCodeAt(0), fg, bg], this.txt_index(x, y))
 
     this.overlays.textCursor.x++
     if (this.overlays.textCursor.x > this.txt_width) {
@@ -359,45 +364,45 @@ export class Text {
   txt_right () { return this.txt_move_to(this.overlays.textCursor.x + 1, this.overlays.textCursor.y) }
 
   txt_clear () {
-    this.txt_array.fill(0)
+    this.txt_data.fill(0)
     this.txt_refresh()
   }
 
   txt_clear_eol () {
     let { x, y } = this.txt_pos()
     let s = this.txt_index(x, y)
-    this.txt_array.fill(0, s, this.txt_index(this.txt_width, y) - s)
+    this.txt_data.fill(0, s, this.txt_index(this.txt_width, y) - s)
     this.txt_refresh()
   }
 
   txt_clear_eos () {
     let { x, y } = this.txt_pos()
     let s = this.txt_index(x, y)
-    this.txt_array.fill(0, s, this.txt_size - s)
+    this.txt_data.fill(0, s, this.txt_size - s)
     this.txt_refresh()
   }
 
   txt_clear_bol () {
     let { x, y } = this.txt_pos()
     let s = this.txt_index(x, y)
-    this.txt_array.fill(0, s, this.txt_index(1, y) - s)
+    this.txt_data.fill(0, s, this.txt_index(1, y) - s)
     this.txt_refresh()
   }
 
   txt_clear_bos () {
     let { x, y } = this.txt_pos()
-    this.txt_array.fill(0, 0, this.txt_index(x, y) - 1)
+    this.txt_data.fill(0, 0, this.txt_index(x, y) - 1)
     this.txt_refresh()
   }
 
   txt_copy_lin (sy, ty) {
     let si = this.txt_line(sy)
-    this.txt_array.copy(si.start, this.txt_line(ty), si.length)
+    this.txt_data.copy(si.start, this.txt_line(ty), si.length)
     this.txt_refresh()
   }
 
   txt_copy_col (sx, tx) {
-    let mem = this.txt_array
+    let mem = this.txt_data
     sx *= 3
     tx *= 3
     for (let y = 0; y < this.txt_height; y++) {
@@ -409,12 +414,12 @@ export class Text {
 
   txt_erase_lin (y) {
     let i = this.txt_line(y)
-    this.txt_array.fill(0, i.start, i.length)
+    this.txt_data.fill(0, i.start, i.length)
     this.txt_refresh()
   }
 
   txt_erase_col (x) {
-    let mem = this.txt_array
+    let mem = this.txt_data
     let ls = this.txt_line(0).start + x * 3
     for (let y = 0; y < this.txt_height; y++) {
       mem.fill(0, ls, 3)
@@ -426,18 +431,18 @@ export class Text {
   txt_scroll (dy) {
     if (dy > 0) {
       let i = this.txt_line(dy + 1)
-      this.txt_array.copy(i.start, 0, this.txt_size)
+      this.txt_data.copy(i.start, 0, this.txt_size)
       i = this.txt_line(dy)
       let s = i.start
-      this.txt_array.fill(0, s, this.txt_size - s)
+      this.txt_data.fill(0, s, this.txt_size - s)
       this.txt_refresh()
     }
     else if (dy < 0) {
       let i = this.txt_line(dy + 1)
-      this.txt_array.copy(i.start, 0, this.txt_size)
+      this.txt_data.copy(i.start, 0, this.txt_size)
       i = this.txt_line(dy)
       let s = i.start
-      this.txt_array.fill(0, s, this.txt_size - s)
+      this.txt_data.fill(0, s, this.txt_size - s)
       this.txt_refresh()
     }
   }

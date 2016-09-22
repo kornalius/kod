@@ -1,11 +1,13 @@
-import { defaults, delay, runtime_error } from '../globals.js'
+import { delay, runtime_error } from '../globals.js'
+
 import { Tokenizer } from '../compiler/tokenizer/tokenizer.js'
 import { Lexer } from '../compiler/lexer/lexer.js'
 import { Transpiler } from '../compiler/transpiler.js'
-import { Memory, MemoryManager } from './mem.js'
+
 import { Interrupt } from './int.js'
 import { Debugger } from './dbg.js'
-import { define_property } from './prop.js'
+
+import { CpuChip } from './chips/cpu.js'
 
 export var VM
 
@@ -15,12 +17,11 @@ export const _VM_PAUSED = 2
 
 VM = class {
 
-  constructor (mem_size) {
+  constructor () {
     window._vm = this
 
-    this.mem_size = mem_size || defaults.vm.mem_size
-    this.mem = new Memory(null, 0, this.mem_size)
-    this.mm = new MemoryManager(this.mem)
+    this.publics = {}
+
     this.int = new Interrupt(this)
     this.dbg = new Debugger(this)
 
@@ -28,8 +29,6 @@ VM = class {
     this.fn = null
 
     this.boot(true)
-
-    this.def_prop = define_property
 
     this.tickBound = this.tick.bind(this)
     PIXI.ticker.shared.add(this.tickBound)
@@ -39,11 +38,16 @@ VM = class {
     this.reset()
 
     if (cold) {
-      this.mem.clear()
+      this.chips = {
+        cpu: new CpuChip(this)
+      }
     }
   }
 
   restart (cold = false) {
+    for (let k in this.chips) {
+      this.chips[k].boot(cold)
+    }
     if (cold) {
       this.shut()
     }
@@ -51,18 +55,20 @@ VM = class {
   }
 
   reset () {
+    for (let k in this.chips) {
+      this.chips[k].reset()
+    }
     this.status = _VM_RUNNING
     this.int.reset()
-    this.mem.reset()
-    this.mm.reset()
     this.dbg.reset()
   }
 
   shut () {
+    for (let k in this.chips) {
+      this.chips[k].shut()
+    }
     this.int.shut()
     this.dbg.shut()
-    this.mm.shut()
-    this.mem.shut()
   }
 
   hlt (code) {
@@ -115,19 +121,15 @@ VM = class {
     if (this.status === _VM_RUNNING) {
       let t = performance.now()
 
+      for (let k in this.chips) {
+        this.chips[k].tick(t, delta)
+      }
+
       this.int.tick(t, delta)
-      this.mem.tick(t, delta)
-      this.mm.tick(t, delta)
       this.dbg.tick(t, delta)
     }
   }
 
   wait (ms) { delay(ms) }
-
-  dump () {
-    console.info('vm dump')
-    this.mem.dump()
-    this.mm.dump()
-  }
 
 }

@@ -1,5 +1,4 @@
 
-export var defaults
 export var error
 export var mixin
 export var delay
@@ -10,15 +9,6 @@ export var runtime_error
 export var io_error
 export var hex
 export var buffer_dump
-
-defaults = {
-  type: 'f32',
-
-  vm: {
-    mem_size: 512 * 1024,
-  },
-
-}
 
 error = (instance, token, ...message) => {
   let args = []

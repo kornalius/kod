@@ -24,9 +24,9 @@ SoundChip = class extends Chip {
     ])
   }
 
-  tick (t) {
-    super.tick(t)
-    this.snd_tick(t)
+  tick (t, delta) {
+    super.tick(t, delta)
+    this.snd_tick(t, delta)
   }
 
   reset () {

@@ -1,5 +1,4 @@
 import { Chip } from '../chip.js'
-import { Struct } from '../struct.js'
 
 export var MouseChip
 
@@ -8,11 +7,9 @@ MouseChip = class extends Chip {
   constructor (vm) {
     super(vm)
 
-    this.header = new Struct(this, this.mem, [
-      { name: 'x', type: 'I' },
-      { name: 'y', type: 'I' },
-      { name: 'btns', type: 'B' },
-    ])
+    this.x = 0
+    this.y = 0
+    this.btns = 0
 
     this.publicize([
       { name: 'x', readonly: true },

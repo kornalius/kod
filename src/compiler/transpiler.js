@@ -1,6 +1,5 @@
 import _ from 'lodash'
 
-export var token_data_type
 export var comma
 export var string
 export var eol
@@ -13,49 +12,6 @@ export var b
 export var e
 
 export var Transpiler
-
-token_data_type = {
-  i8: 'b',
-  int8: 'b',
-  byte: 'b',
-
-  u8: 'B',
-  uint8: 'B',
-  ubyte: 'B',
-
-  i16: 'w',
-  int16: 'w',
-  int: 'w',
-  word: 'w',
-  short: 'w',
-
-  u16: 'W',
-  uint16: 'W',
-  uint: 'W',
-  uword: 'W',
-  ushort: 'W',
-
-  i32: 'i',
-  int32: 'i',
-  long: 'i',
-  dword: 'i',
-  let: 'i',
-
-  u32: 'I',
-  uint32: 'I',
-  ulong: 'I',
-  udword: 'I',
-
-  f32: 'f',
-  float: 'f',
-  float32: 'f',
-
-  f64: 'd',
-  float64: 'd',
-  double: 'd',
-
-  string: 's',
-}
 
 string = value => '\'' + value.replace(/'/g, '\'') + '\''
 
@@ -102,27 +58,37 @@ s = node => {
 
     if (node.is('assign')) {
       if (node._def) {
-        tmpl = 'def_prop(#{scope}, \'#{id}\', _vm.mem, alloc(#{type}, #{dimensions}, #{expr}), #{type}, #{dimensions});'
-        dat = { scope: scope(node), id: d.id.value, type: e(d.type), dimensions: d.dimensions ? e(d.dimensions) : '1', expr: e(d.expr) }
+        if (d.dimensions) {
+          tmpl = '#{scope}#{id} = new Array(#{dimensions});\n'
+          tmpl += '#{scope}#{id}.push(#{expr});'
+        }
+        else {
+          tmpl = '#{scope}#{id} = #{expr};'
+        }
+        dat = { scope: scope(node, true), id: d.id.value, dimensions: d.dimensions ? e(d.dimensions) : '1', expr: e(d.expr) }
       }
       else {
-        tmpl = '#{id} = #{expr};'
-        dat = { id: e(d.id), expr: e(d.expr) }
+        tmpl = '#{scope}#{id} = #{expr};'
+        dat = { scope: scope(node, true), id: d.id.value, expr: e(d.expr) }
       }
     }
+
     else if (node.is('fn_assign')) {
       tmpl = '#{scope}#{id} = function (#{args}) #{body}'
       let args = e(_.map(d.args, a => a.data.id), ', ')
       dat = { scope: scope(node, true), id: d.id.value, args, body: b(d.body, true, args) }
     }
+
     else if (node.is('fn')) {
       tmpl = '#{scope}#{fn}(#{args});'
       dat = { scope: scope(node, true), fn: node.value, args: e(d.args, ', ') }
     }
+
     else if (node.is('if')) {
       tmpl = 'if (#{expr}) #{true_body}#{false_body}'
       dat = { expr: e(d.expr), true_body: b(d.true_body), false_body: s(d.false_body) }
     }
+
     else if (node.is('else')) {
       if (d.expr) { // else if
         tmpl = 'else if (#{expr}) #{true_body}#{false_body}'
@@ -133,6 +99,7 @@ s = node => {
         dat = { false_body: b(d.false_body) }
       }
     }
+
     else if (node.is('while')) {
       tmpl = 'while (#{expr}) #{body}'
       dat = { expr: e(d.expr), body: b(d.body) }
@@ -190,18 +157,22 @@ e = (node, separator) => {
       tmpl = '#{scope}#{fn}(#{args})'
       dat = { scope: scope(node, true), fn: node.value, args: e(d.args, ', ') }
     }
+
     else if (node.is(['math', 'logic', 'comp'])) {
       tmpl = '#{left} #{op} #{right}'
       dat = { op: node.value, left: e(d.left), right: e(d.right) }
     }
-    else if (node.is(['type', 'char', 'string'])) {
-      tmpl = '#{value}'
-      dat = { value: string(node.is('type') ? token_data_type[node.value] : node.value) }
-    }
+
     else if (node.is(['var', 'fn'])) {
       tmpl = '#{scope}#{value}'
       dat = { scope: scope(node, true), value: node.value }
     }
+
+    else if (node.is(['char', 'string'])) {
+      tmpl = '#{value}'
+      dat = { value: string(node.value) }
+    }
+
     else {
       tmpl = '#{value}'
       dat = { value: node.value }
@@ -252,10 +223,6 @@ Transpiler = class {
   }
 
   code_start () {
-    this.writeln('var alloc = _vm.mm.alloc.bind(_vm.mm);')
-    this.writeln('var free = _vm.mm.free.bind(_vm.mm);')
-    this.writeln('var print = console.log.bind(console);')
-    this.writeln('var def_prop = _vm.def_prop.bind(_vm);')
     this.writeln('var global_scope = {};')
     this.writeln()
   }

@@ -1,28 +1,31 @@
+let x
 let i = 10
-int j[100] = 20
+let j[100] = 20
 
-print i j
+x = 100
+
+log i j x
 
 if 30 > 20
-  print "greater"
+  log "greater"
   ; i = 23
   if (i > 20)
-    print "a"
+    log "a"
   else
-    print "b"
+    log "b"
   end
 else if (20 > (3 + 4) * i)
-  print "cool"
+  log "cool"
 else
-  print "lesser"
+  log "lesser"
 
 end
 
 while (i > 100)
 end
 
-let f => (float a, int b, byte c)
-  print a / b + c
+let f => (let a, let b, let c)
+  log a / b + c
 end
 
 f(10, 20, 30)

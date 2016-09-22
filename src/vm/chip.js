@@ -1,3 +1,4 @@
+import { reserved } from '../compiler/tokenizer/token.js'
 
 export class Chip {
 
@@ -5,53 +6,46 @@ export class Chip {
     this.vm = vm
   }
 
-  init_mem (size) {
-    this.size = size || 4
-    this.top = this.mm.alloc(this.size)
-    this.bottom = this.top + this.size - 1
-  }
-
-  get mem () { return this.vm.mem }
-
-  get mm () { return this.vm.mm }
-
   publicize (data) {
+    let publics = this.vm.publics
     for (let d of data) {
-      if (_.isFunction(d.value)) {
-        this['$' + d.name] = d.value.bind(this)
+      let name = d.name
+      let prop = d.name
+      if (d.value) {
+        if (_.isFunction(d.value)) {
+          publics[name] = d.value.bind(this)
+          reserved[name] = 'fn'
+          continue
+        }
+      }
+      if (_.isFunction(this[prop])) {
+        publics[name] = this[prop].bind(this)
+        reserved[name] = 'fn'
       }
       else {
-        let name = d.name
         let description = {
           enumerable: true,
-          get: () => this[name],
+          get: () => publics[prop],
         }
         if (!d.readonly) {
-          description.set = value => { this[name] = value }
+          description.set = value => { publics[prop] = value }
         }
-        Object.defineProperty(this, '$' + name, description)
+        Object.defineProperty(publics, name, description)
+        reserved[name] = 'var'
       }
     }
   }
 
   boot (cold = false) {
-    this.reset()
   }
 
   reset () {
-    if (this.top && this.size) {
-      this.mem.fill(0, this.top, this.size)
-    }
   }
 
   shut () {
-    this.reset()
-    if (this.top) {
-      this.mm.free(this.top)
-    }
   }
 
-  tick () {
+  tick (t, delta) {
   }
 
 }

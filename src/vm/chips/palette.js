@@ -1,4 +1,3 @@
-import { Struct } from '../struct.js'
 import { Chip } from '../chip.js'
 
 export var Palette
@@ -8,39 +7,24 @@ Palette = class extends Chip {
   constructor (vm, count) {
     super(vm)
 
-    count = count || 32
-
-    this.struct = new Struct(this, this.mem, [
-      { name: 'count', type: '', value: count },
-      { name: 'data', type: count * 4 },
-    ])
+    this.count = count || 32
+    this.data = []
 
     this.publicize([
       { name: 'count', readonly: true },
-      { name: 'size', readonly: true },
-      { name: 'red', value: rgba => this.red(rgba) },
-      { name: 'green', value: rgba => this.green(rgba) },
-      { name: 'blue', value: rgba => this.blue(rgba) },
-      { name: 'alpha', value: rgba => this.alpha(rgba) },
-      { name: 'rgba_num', value: rgba => this.rgba_num(rgba) },
-      { name: 'num_rgba', value: rgba => this.num_rgba(rgba) },
-      { name: 'pal_rgba', value: rgba => this.pal_rgba(rgba) },
-      { name: 'rgba_pal', value: rgba => this.rgba_pal(rgba) },
+      { name: 'red' },
+      { name: 'green' },
+      { name: 'blue' },
+      { name: 'alpha' },
+      { name: 'rgba_num' },
+      { name: 'num_rgba' },
+      { name: 'pal_rgba' },
+      { name: 'rgba_pal' },
     ])
   }
 
-  tick (t) {
-  }
-
   reset () {
-    this.struct.reset()
     super.reset()
-
-    this.top = this.data._data.mem_top
-    this.bottom = this.data._data.mem_bottom
-    this.size = this.data._data.mem_size
-
-    this.array = new Uint32Array(this.mem, this.top, this.size)
 
     this.pal_rgba(0, 0x000000ff)
     this.pal_rgba(1, 0xffffffff)
@@ -76,11 +60,6 @@ Palette = class extends Chip {
     this.pal_rgba(31, 0xe3d1d6ff)
   }
 
-  shut () {
-    this.struct.release()
-    super.shut()
-  }
-
   red (rgba) { return this.num_rgba(rgba).r }
 
   green (rgba) { return this.num_rgba(rgba).g }
@@ -91,10 +70,10 @@ Palette = class extends Chip {
 
   num_rgba (rgba) {
     return {
-      r: rgba >> (this.mem.littleEndian ? 24 : 0) & 0xFF,
-      g: rgba >> (this.mem.littleEndian ? 16 : 8) & 0xFF,
-      b: rgba >> (this.mem.littleEndian ? 8 : 16) & 0xFF,
-      a: rgba >> (this.mem.littleEndian ? 0 : 24) & 0xFF,
+      r: rgba >> (this.vm.littleEndian ? 24 : 0) & 0xFF,
+      g: rgba >> (this.vm.littleEndian ? 16 : 8) & 0xFF,
+      b: rgba >> (this.vm.littleEndian ? 8 : 16) & 0xFF,
+      a: rgba >> (this.vm.littleEndian ? 0 : 24) & 0xFF,
     }
   }
 
@@ -118,22 +97,22 @@ Palette = class extends Chip {
       c = a << 24 | r << 16 | g << 8 | b
     }
 
-    return this.mem.littleEndian ? reverse(c) : c
+    return this.vm.littleEndian ? reverse(c) : c
   }
 
   pal_rgba (c, r, g, b, a) {
-    let mem = this.array
+    let pal = this.data
     if (r) {
-      mem[c] = this.rgba_num(r, g, b, a)
+      pal[c] = this.rgba_num(r, g, b, a)
     }
-    return mem[c]
+    return pal[c]
   }
 
   rgba_pal (r, g, b, a) {
-    let mem = this.array
+    let pal = this.data
     let color = this.rgba_num(r, g, b, a)
     for (let c = 0; c < this.count; c++) {
-      if (mem[c] === color) {
+      if (pal[c] === color) {
         return c
       }
     }

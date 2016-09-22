@@ -1,6 +1,7 @@
 import _ from 'lodash'
 
 export var Token
+export var reserved = {}
 
 Token = class {
 
@@ -35,22 +36,16 @@ Token = class {
 
   get type () {
     if (this._type === 'id') {
-      let r = this.value.match(/^(i8|u8|int8|uint8|byte|ubyte|i16|u16|int16|uint16|int|uint|word|uword|short|ushort|i32|u32|int32|uint32|dword|udword|long|ulong|let|f32|float|float32|f64|float64|double|string)$/i) // type
-      if (r && r.length && r[0].length) {
-        this._type = 'type'
+      let r = this.value.match(new RegExp('^' + _.keys(reserved).join('|') + '$', 'i')) // reserved words
+      if (r && r.length > 0) {
+        this._type = reserved[r[0]]
+        this._reserved = true
       }
-      else {
-        r = this.value.match(/^print$/i) // reserved functions
-        if (r && r.length > 0) {
-          this._type = 'fn'
-          this._reserved = true
-        }
-        else if (this.lexer) {
-          let i = this.lexer.frames.exists(this.value)
-          if (i) {
-            this._type = i.item_type
-            this._global = i.is_global
-          }
+      else if (this.lexer) {
+        let i = this.lexer.frames.exists(this.value)
+        if (i) {
+          this._type = i.item_type
+          this._global = i.is_global
         }
       }
     }

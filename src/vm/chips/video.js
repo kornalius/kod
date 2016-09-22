@@ -21,18 +21,10 @@ VideoChip = class extends Chip {
     this.margins_x = margins ? margins.x : 32
     this.margins_y = margins ? margins.y : 32
 
-    this.struct = new Struct(this, this.mem, [
-      { name: 'force_update', type: 'B' },
-      { name: 'force_flip', type: 'B' },
-      { name: 'width', type: 'I', value: this.width },
-      { name: 'height', type: 'I', value: this.height },
-      { name: 'data', type: 'B', dimensions: this.size },
-    ])
+    this.force_update = false
+    this.force_flip = false
 
-    this.top = this.data.mem_top
-    this.bottom = this.top + this.size - 1
-
-    this.array = new Uint8Array(_vm.mem_buffer, this.top, this.size)
+    this.pixels = new Uint8Array(this.size)
 
     this.monitor_init()
     this.monitor_resize()
@@ -40,13 +32,14 @@ VideoChip = class extends Chip {
     this.clear()
 
     this.publicize([
-      { name: 'clear', value: () => this.clear(...arguments) },
-      { name: 'pixel', value: () => this.pixel(...arguments) },
-      { name: 'pixidx', value: () => this.pix_idx(...arguments) },
-      { name: 'idxpix', value: () => this.idx_pix(...arguments) },
-      { name: 'scroll', value: () => this.scroll(...arguments) },
-      { name: 'flip', value: () => this.flip(...arguments) },
-      { name: 'refresh', value: () => this.refresh(...arguments) },
+      { name: 'pixels' },
+      { name: 'clear' },
+      { name: 'flip' },
+      { name: 'refresh' },
+      { name: 'pixel' },
+      { name: 'pix_idx' },
+      { name: 'idx_pix' },
+      { name: 'scroll' },
     ])
   }
 
@@ -59,24 +52,18 @@ VideoChip = class extends Chip {
     }
   }
 
-  tick (t) {
-    this.monitor_tick(t)
+  tick (t, delta) {
+    this.monitor_tick(t, delta)
 
     if (this.force_update) {
       this.force_update = false
-
-      this.pal_tick(t)
-      this.txt_tick(t)
-      this.spr_tick(t)
-
       if (this.force_flip) {
         this.flip()
       }
-
       this.renderer.render(this.stage)
     }
 
-    super.tick(t)
+    super.tick(t, delta)
   }
 
   reset () {
@@ -87,8 +74,6 @@ VideoChip = class extends Chip {
 
   shut () {
     this.monitor_shut()
-
-    this.struct.release()
 
     this.stage.destroy()
     this.stage = null
@@ -107,7 +92,7 @@ VideoChip = class extends Chip {
   }
 
   clear () {
-    this.array.fill(0)
+    this.pixels.fill(0)
     this.refresh()
   }
 
@@ -116,7 +101,7 @@ VideoChip = class extends Chip {
     let data = screenOverlay.context.getImageData(0, 0, screenOverlay.width, screenOverlay.height)
     let pixels = new Uint32Array(data.data.buffer)
 
-    let mem = this.array
+    let mem = this.pixels
     for (let i = 0; i < this.size; i++) {
       pixels[i] = this.palette_rgba(mem[i])
     }
@@ -127,7 +112,7 @@ VideoChip = class extends Chip {
   }
 
   pixel (i, c) {
-    let mem = this.array
+    let mem = this.pixels
     if (c !== undefined && mem[i] !== c) {
       mem[i] = c
     }
@@ -146,7 +131,7 @@ VideoChip = class extends Chip {
     let lw = y * this.width
     let s = lw
     let e = this.size - lw
-    this.array.copy(s, 0, e - s)
+    this.pixels.copy(s, 0, e - s)
     this.refresh()
   }
 

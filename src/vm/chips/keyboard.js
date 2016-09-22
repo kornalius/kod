@@ -1,6 +1,4 @@
 import { Chip } from '../chip.js'
-import { Struct } from '../struct.js'
-
 
 export var KeyboardChip
 
@@ -9,11 +7,9 @@ KeyboardChip = class extends Chip {
   constructor (vm) {
     super(vm)
 
-    this.header = new Struct(this, this.mem, [
-      { name: 'mods', type: 'B' },
-      { name: 'joystick', type: 'B' },
-      { name: 'keys', type: 'B', dimensions: 256 },
-    ])
+    this.mods = 0
+    this.joystick = 0
+    this.keys = {}
 
     this.publicize([
       { name: 'keys', readonly: true },
