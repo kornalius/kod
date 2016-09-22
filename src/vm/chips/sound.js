@@ -6,29 +6,23 @@ export var SoundChip
 
 SoundChip = class extends Chip {
 
-  constructor () {
-    super(...arguments)
+  constructor (vm) {
+    super(vm)
 
     this.snd_init()
+
+    this.publicize([
+      { name: 'load', value: () => this.snd_load(...arguments) },
+      { name: 'name', value: () => this.snd_name(...arguments) },
+      { name: 'play', value: () => this.snd_play(...arguments) },
+      { name: 'stop', value: () => this.snd_stop(...arguments) },
+      { name: 'free', value: () => this.snd_free(...arguments) },
+      { name: 'note', value: () => this.snd_note(...arguments) },
+      { name: 'poly', value: () => this.snd_poly(...arguments) },
+      { name: 'poly_add', value: () => this.snd_poly_add(...arguments) },
+      { name: 'poly_rem', value: () => this.snd_poly_rem(...arguments) },
+    ])
   }
-
-  $load () { return this.snd_load(...arguments) }
-
-  $name () { return this.snd_name(...arguments) }
-
-  $play () { return this.snd_play(...arguments) }
-
-  $stop () { return this.snd_stop(...arguments) }
-
-  $free () { return this.snd_free(...arguments) }
-
-  $note () { return this.snd_note(...arguments) }
-
-  $poly () { return this.snd_poly(...arguments) }
-
-  $poly_add () { return this.snd_poly_add(...arguments) }
-
-  $poly_rem () { return this.snd_poly_rem(...arguments) }
 
   tick (t) {
     super.tick(t)

@@ -5,13 +5,22 @@ export var MouseChip
 
 MouseChip = class extends Chip {
 
-  constructor () {
-    super(...arguments)
+  constructor (vm) {
+    super(vm)
 
-    this.data = new Struct(this.mem, [
+    this.header = new Struct(this, this.mem, [
       { name: 'x', type: 'I' },
       { name: 'y', type: 'I' },
       { name: 'btns', type: 'B' },
+    ])
+
+    this.publicize([
+      { name: 'x', readonly: true },
+      { name: 'y', readonly: true },
+      { name: 'btns', readonly: true },
+      { name: 'left', value: () => this.data.btns & 0x01 },
+      { name: 'middle', value: () => this.data.btns & 0x02 },
+      { name: 'right', value: () => this.data.btns & 0x04 },
     ])
 
     // this.video = _vm.ports[_vm.port_by_name('vid')]
@@ -41,40 +50,28 @@ MouseChip = class extends Chip {
     // }
   }
 
-  get $pos_x () { return this.data.x }
-  set $pos_x (value) { this.data.x = value }
-
-  get $pos_y () { return this.data.y }
-  set $pos_y (value) { this.data.y = value }
-
-  get $left () { return this.data.btns & 0x01 }
-
-  get $middle () { return this.data.$btns & 0x02 }
-
-  get $right () { return this.data.btns & 0x04 }
-
   reset () {
-    this.data.reset()
+    this.header.reset()
     super.reset()
   }
 
   shut () {
-    this.data.release()
+    this.header.release()
     super.shut()
   }
 
   onMouseDown (e) {
     switch (e.data.originalEvent.button) {
       case 0: // left
-        this.$btns |= 0x01
+        this.btns |= 0x01
         break
 
       case 1: // middle
-        this.$btns |= 0x02
+        this.btns |= 0x02
         break
 
       case 2: // right
-        this.$btns |= 0x04
+        this.btns |= 0x04
         break
     }
   }
@@ -82,15 +79,15 @@ MouseChip = class extends Chip {
   onMouseUp (e) {
     switch (e.data.originalEvent.button) {
       case 0: // left
-        this.$btns &= ~0x01
+        this.btns &= ~0x01
         break
 
       case 1: // middle
-        this.$btns &= ~0x02
+        this.btns &= ~0x02
         break
 
       case 2: // right
-        this.$btns &= ~0x04
+        this.btns &= ~0x04
         break
     }
   }
@@ -102,8 +99,8 @@ MouseChip = class extends Chip {
     // let x = Math.trunc(Math.min(this.size.x, Math.max(margins_x / 2, e.data.global.x)) / cursor.sprite.scale.x)
     // let y = Math.trunc(Math.min(this.size.y, Math.max(margins_y / 2, e.data.global.y)) / cursor.sprite.scale.y)
 
-    // this.$x = x
-    // this.$y = y
+    // this.x = x
+    // this.y = y
 
     // cursor.x = x
     // cursor.y = y

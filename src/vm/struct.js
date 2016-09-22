@@ -4,12 +4,14 @@ import { define_property } from './property.js'
 
 export class Struct {
 
-  constructor (mem, fmt, offset) {
+  static map (targetObj, mem, fmt, offset) { return new Struct(targetObj, mem, fmt, offset) }
+
+  constructor (targetObj, mem, fmt, offset) {
     offset = offset || this.mem.alloc(this.size(fmt))
     this.mem = mem
     this.format = fmt
     this.top = offset
-    this.bottom = this.define_props(fmt, this.top) - 1
+    this.bottom = this.define_props(targetObj, fmt, this.top) - 1
   }
 
   names (fmt) { return _.map(fmt, st => st.name) }
@@ -27,7 +29,7 @@ export class Struct {
 
   format_by_name (fmt, name) { return _.find(fmt, { name }) }
 
-  define_props (fmt, offset) {
+  define_props (targetObj, fmt, offset) {
     for (let name of this.names(fmt)) {
       let f = this.format_by_name(fmt, name)
 
@@ -38,7 +40,7 @@ export class Struct {
       let entry
 
       if (_.isObject(type)) {
-        entry = new Struct(this.mem, offset, type)
+        entry = new Struct(targetObj[n], this.mem, offset, type)
         size = entry.bottom - entry.top + 1
       }
       else {
@@ -51,12 +53,12 @@ export class Struct {
         entry = { name, type, size, top: offset, bottom: offset + size - 1 }
       }
 
-      this[n] = entry
+      targetObj[n] = entry
 
-      define_property(this, name, this.mem, offset, this.type, size)
+      define_property(targetObj, name, this.mem, offset, this.type, size)
 
       if (value) {
-        this[name] = value
+        targetObj[name] = value
       }
 
       offset += size

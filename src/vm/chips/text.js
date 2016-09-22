@@ -133,6 +133,40 @@ export class Text {
     this.txt_size = this.txt_width * this.txt_height * 3
 
     this.fnt_size = this.chr_count * this.chr_size
+
+    this.publicize([
+      { name: 'draw', value: () => this.txt_draw(...arguments) },
+      { name: 'txt_refresh', value: () => this.txt_refresh(...arguments) },
+      { name: 'idx', value: () => this.txt_index(...arguments) },
+      { name: 'lin', value: () => this.txt_line(...arguments) },
+      { name: 'at', value: () => this.txt_char_at(...arguments) },
+      { name: 'put', value: () => this.txt_put_char(...arguments) },
+      { name: 'print', value: () => this.txt_print(...arguments) },
+      { name: 'pos', value: () => this.txt_pos(...arguments) },
+      { name: 'to', value: () => this.txt_move_to(...arguments) },
+      { name: 'by', value: () => this.txt_move_by(...arguments) },
+      { name: 'bol', value: () => this.txt_bol(...arguments) },
+      { name: 'eol', value: () => this.txt_eol(...arguments) },
+      { name: 'bos', value: () => this.txt_bos(...arguments) },
+      { name: 'eos', value: () => this.txt_eos(...arguments) },
+      { name: 'bs', value: () => this.txt_bs(...arguments) },
+      { name: 'cr', value: () => this.txt_cr(...arguments) },
+      { name: 'lf', value: () => this.txt_lf(...arguments) },
+      { name: 'up', value: () => this.txt_up(...arguments) },
+      { name: 'left', value: () => this.txt_left(...arguments) },
+      { name: 'down', value: () => this.txt_down(...arguments) },
+      { name: 'right', value: () => this.txt_right(...arguments) },
+      { name: 'clr', value: () => this.txt_clear(...arguments) },
+      { name: 'clr_eol', value: () => this.txt_clear_eol(...arguments) },
+      { name: 'clr_os', value: () => this.txt_clear_eos(...arguments) },
+      { name: 'clr_bl', value: () => this.txt_clear_bol(...arguments) },
+      { name: 'clr_bs', value: () => this.txt_clear_bos(...arguments) },
+      { name: 'cpy_lin', value: () => this.txt_copy_lin(...arguments) },
+      { name: 'cpy_col', value: () => this.txt_copy_col(...arguments) },
+      { name: 'erase_lin', value: () => this.txt_erase_lin(...arguments) },
+      { name: 'erase_col', value: () => this.txt_erase_col(...arguments) },
+      { name: 'scroll', value: () => this.txt_scroll(...arguments) },
+    ])
   }
 
   txt_tick (t) {
