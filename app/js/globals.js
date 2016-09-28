@@ -1,3 +1,4 @@
+import _ from 'lodash'
 
 export var error
 export var mixin
@@ -22,7 +23,7 @@ error = (instance, token, ...message) => {
   }
   console.error(...args, 'at', token.toString())
   instance.errors++
-  debugger
+  debugger;
   return null
 }
 

@@ -1,0 +1,9 @@
+#false 0
+#true 1
+#null 0
+#nil 0
+
+#PI Math.PI
+#PI_2 Math.PI * 2
+#RAD_TO_DEG 180 / Math.PI
+#DEG_TO_RAD Math.PI / 180

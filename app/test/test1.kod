@@ -1,8 +1,8 @@
 #"globals"
 
 #MY_CONST 2 * (3 + 4)
-#false 0
-#true 1
+
+log true, false, PI
 
 let x
 let i = 10
@@ -43,4 +43,8 @@ end
 
 f 10, 20, 30
 
-log s.k, s.f(2), s.f 103
+log s.k, s.f(2), s.f(103)
+
+for i = 1 to s.k
+  log i
+end

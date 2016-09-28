@@ -16,7 +16,7 @@ import now from 'performance-now'
 
 const EE = new EventEmitter({ delimiter: '.' })
 
-let userPath = path.join(path.dirname(module.filename), '../user')
+let userPath = path.join(app.getAppPath(), '/user')
 if (!fs.existsSync(userPath)) {
   fs.makeTreeSync(userPath)
 }
@@ -25,15 +25,18 @@ let IS_WIN = /^win/.test(process.platform)
 let IS_OSX = process.platform === 'darwin'
 let IS_LINUX = process.platform === 'linux'
 let dirs = {
+  build: __dirname,
+  cwd: app.getAppPath(),
   home: app.getPath('home'),
   app: app.getPath('appData'),
   user: userPath,
   tmp: app.getPath('temp'),
   root: app.getPath('exe'),
-  module: path.dirname(module.filename),
   node_modules: path.join(userPath, 'node_modules'),
   user_pkg: path.join(userPath, 'package.json'),
 }
+
+let p = (...args) => path.join(__dirname, ...args)
 
 let name = app.getName()
 let version = app.getVersion()
@@ -70,6 +73,7 @@ let messageBox = (...args) => {
 
 export {
   _,
+  p,
   name,
   version,
   electron,

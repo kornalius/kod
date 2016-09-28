@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import { delay, runtime_error } from '../globals.js'
 
 import { Lexer } from '../compiler/lexer.js'
@@ -98,12 +100,14 @@ VM = class {
     this.stop()
   }
 
-  load (uri) {
+  load (path, src) {
+    this.path = path
+
     this.fn = null
     this.code = null
 
     let lexer = new Lexer(this)
-    lexer.run(uri)
+    lexer.run(this.path, src)
 
     let parser = new Parser(lexer)
     let transpiler = new Transpiler()

@@ -1,15 +1,16 @@
 import { VM } from './vm/vm.js'
-import { fs } from './utils.js'
+import { fs, p } from './utils.js'
 
 // let win = new BrowserWindow({ width: 800, height: 600 })
 // win.loadURL('https://github.com')
 
-setTimeout(() => {
-  fs.readFile('/test/test1.kod', data => {
-    console.log(data)
+let vm = new VM()
 
-    let vm = new VM()
-    vm.load(data)
+let pn = p('/test/test1.kod')
+fs.readFile(pn, 'utf8', (err, data) => {
+  if (!err) {
+    console.log(data)
+    vm.load(pn, data)
     vm.run()
-  })
-}, 100)
+  }
+})

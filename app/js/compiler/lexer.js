@@ -1,14 +1,103 @@
 import _ from 'lodash'
-import { Token } from './token.js'
+import { path, dirs, fs } from '../utils.js'
 
+export var Token
 export var Lexer
+
+Token = class {
+
+  constructor (lexer, type, value, start, end) {
+    if (lexer instanceof Token) {
+      let t = lexer
+      this.lexer = t.lexer
+      this._type = t._type
+      this._reserved = t._reserved
+      this.value = t.value
+      this.start = _.clone(t.start)
+      this.end = _.clone(t.end)
+      this.length = t.value.length
+    }
+    else {
+      this.lexer = lexer
+      this._type = type
+      this._reserved = false
+      this.value = value || ''
+      this.start = start || { offset: 0, line: 0, column: 0 }
+      this.end = end || { offset: 0, line: 0, column: 0 }
+      this.length = this.end.offset - this.start.offset
+    }
+  }
+
+  get parser () { return this.lexer.parser }
+
+  is (e) {
+    if (_.isString(e)) {
+      let parts = e.split('|')
+      if (parts.length > 1) {
+        for (let p of parts) {
+          if (this.is(p)) {
+            return true
+          }
+        }
+      }
+      else {
+        return e === '.' || this.type === e || this.value === e
+      }
+    }
+    else if (_.isRegExp(e)) {
+      return this.type.match(e) || this.value.match(e)
+    }
+    else if (_.isArray(e)) {
+      for (let i of e) {
+        if (this.is(i)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  get type () {
+    if (this._type === 'id') {
+      let r = this.value.match(this.lexer.publics_regexp) // public words
+      if (r && r.length > 0) {
+        this._type = _.isFunction(this.lexer.vm.publics[r[0]]) ? 'fn' : 'var'
+        this._scope = '_vm.publics'
+        return this._type
+      }
+
+      r = this.value.match(this.lexer.globals_regexp) // global words
+      if (r && r.length > 0) {
+        this._type = 'var'
+        return this._type
+      }
+
+      if (this.parser && !this.parser.var_def_mode) {
+        let i = this.parser.frames.exists(this.value)
+        if (i) {
+          this._type = i.item_type
+          this._scope = i.frame.name
+          return this._type
+        }
+      }
+    }
+    return this._type
+  }
+
+  toString () {
+    return _.template('"#{value}" (Line: #{line}, Column: #{column})')({ value: this.value, line: this.start.line, column: this.start.column })
+  }
+
+}
+
 
 Lexer = class {
 
-  constructor (vm, text) {
+  constructor (vm, path, text) {
     this.vm = vm
 
     this.publics_regexp = new RegExp('^' + _.keys(this.vm.publics).join('|') + '$', 'i')
+    this.globals_regexp = new RegExp('^' + ['Math'].join('|') + '$', 'i')
 
     this.token_types = {
       eol: /^[\r\n]/,
@@ -47,12 +136,13 @@ Lexer = class {
       fn_assign: /^=>/,
     }
 
-    this.reset(text)
+    this.reset(path, text)
   }
 
-  reset (text) {
+  reset (path, text) {
     this.errors = 0
     this.parser = null
+    this.path = path || ''
     this.text = text || ''
     this.length = this.text.length
     this.offset = 0
@@ -136,7 +226,32 @@ Lexer = class {
         }
       }
       else if (token.type === 'include') {
-        debugger;
+        this.offset = offset
+        this.column += len + 1
+        let fn = token.value + (path.extname(token.value) === '' ? '.kod' : '')
+        let pn = path.join(__dirname, fn)
+        try {
+          fs.statSync(pn)
+        }
+        catch (e) {
+          try {
+            pn = path.join(dirs.user, fn)
+            fs.statSync(pn)
+          }
+          catch (e) {
+            pn = ''
+          }
+        }
+
+        if (pn !== '') {
+          let src = fs.readFileSync(pn, 'utf8')
+          let lx = new Lexer(this.vm)
+          lx.run(pn, src)
+          if (!lx.errors) {
+            _.extend(this.constants, lx.constants)
+            this.tokens = this.tokens.concat(lx.tokens)
+          }
+        }
       }
       else {
         let c = this.constants[token.value.toLowerCase()]
@@ -157,8 +272,12 @@ Lexer = class {
     return token
   }
 
-  run (text) {
-    this.reset(text)
+  run (path, text) {
+    if (!text) {
+      text = path
+      path = ''
+    }
+    this.reset(path, text)
     while (this.validOffset(this.offset)) {
       this.next()
     }

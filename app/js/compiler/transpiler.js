@@ -133,6 +133,12 @@ s = node => {
         dat: { expr: e(d.expr), body: b(d.body, false, '') }
       }
     }
+    else if (node.is('for')) {
+      t = {
+        tmpl: '{\nvar $s = {};\nfor (#{scope}#{v} = #{min_expr}; #{scope}#{v} < #{max_expr}; #{scope}#{v} += #{step_expr}) #{body}}',
+        dat: { scope: node.token._scope ? node.token._scope + '.' : '', v: d.v.value, min_expr: e(d.min_expr), max_expr: e(d.max_expr), step_expr: d.step_expr ? e(d.step_expr) : '1', body: b(d.body, false) }
+      }
+    }
     else if (node.is('return')) {
       t = {
         tmpl: 'return #{args};',
@@ -158,7 +164,7 @@ b = (node, semi = false, args_def = null) => {
 
   indent++
 
-  if (!_.isUndefined(args_def)) {
+  if (!_.isNull(args_def)) {
     str += l(i(_.template('var $s = {#{args}};')({ args: args_def })))
   }
 
@@ -209,23 +215,15 @@ e = (node, separator) => {
       }
     }
     else if (node.is('open_bracket')) {
-      if (!node._field) {
-        t = {
-          tmpl: 'new Proxy([#{args}], _vm.PArray)#{fields}',
-          dat: { args: e(d.args, ', '), fields: d.fields ? e(d.fields, '') : '' }
-        }
-      }
-      else {
-        t = {
-          tmpl: '[#{args}]()#{fields}',
-          dat: { args: e(d.args, ', '), fields: d.fields ? e(d.fields, '') : '' }
-        }
+      t = {
+        tmpl: '[#{args}]#{fields}',
+        dat: { args: e(d.args, ', '), fields: d.fields ? e(d.fields, '') : '' }
       }
     }
     else if (node.is('open_curly')) {
       let def = _.map(d.def, f => _.template('#{value}: #{expr}')({ value: f.value, expr: e(f.data.expr) }))
       t = {
-        tmpl: 'new Proxy({#{def}}, _vm.PObject)#{fields}',
+        tmpl: '{#{def}}#{fields}',
         dat: { def: e(def, ', '), fields: d.fields ? e(d.fields, '') : '' }
       }
     }
@@ -237,8 +235,8 @@ e = (node, separator) => {
     }
     else if (node.is(['var', 'fn'])) {
       t = {
-        tmpl: '#{scope}#{value}#{fields}',
-        dat: { scope: node.token._scope ? node.token._scope + '.' : '', value: node.value, fields: d.fields ? e(d.fields, '') : '' }
+        tmpl: '#{scope}#{field}#{value}#{fields}',
+        dat: { scope: node.token._scope ? node.token._scope + '.' : '', field: node._field ? '.' : '', value: node.value, fields: d.fields ? e(d.fields, '') : '' }
       }
     }
     else if (node.is(['char', 'string'])) {

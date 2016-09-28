@@ -1,3 +1,4 @@
+import _ from 'lodash'
 
 export var Frame
 export var Frames

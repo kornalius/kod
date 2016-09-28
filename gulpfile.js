@@ -129,7 +129,7 @@ gulp.task('build', ['build-pixi-js', 'build-client', 'build-server'])
 
 
 gulp.task('watch-client', () => {
-  gulp.watch('./app/**/*', { debounceDelay: 500 }, (e) => {
+  gulp.watch(['./app/**/*', './user/**/*'], { debounceDelay: 500 }, (e) => {
     gulp.start('build-client', () => {
       console.log('Reloading Electron')
       electron.reload()
