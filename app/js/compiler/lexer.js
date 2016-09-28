@@ -28,8 +28,6 @@ Token = class {
     }
   }
 
-  get parser () { return this.lexer.parser }
-
   is (e) {
     if (_.isString(e)) {
       let parts = e.split('|')
@@ -58,26 +56,18 @@ Token = class {
   }
 
   get type () {
-    if (this._type === 'id') {
+    if (this._type === 'math_assign' || this._type === 'logic_assign') {
+      this._type = 'assign'
+    }
+    else if (this._type === 'id') {
       let r = this.value.match(this.lexer.publics_regexp) // public words
       if (r && r.length > 0) {
-        this._type = _.isFunction(this.lexer.vm.publics[r[0]]) ? 'fn' : 'var'
-        this._scope = '_vm.publics'
-        return this._type
+        this._publics = true
       }
-
-      r = this.value.match(this.lexer.globals_regexp) // global words
-      if (r && r.length > 0) {
-        this._type = 'var'
-        return this._type
-      }
-
-      if (this.parser && !this.parser.var_def_mode) {
-        let i = this.parser.frames.exists(this.value)
-        if (i) {
-          this._type = i.item_type
-          this._scope = i.frame.name
-          return this._type
+      else {
+        let r = this.value.match(this.lexer.globals_regexp) // global words
+        if (r && r.length > 0) {
+          this._globals = true
         }
       }
     }
@@ -100,10 +90,10 @@ Lexer = class {
     this.globals_regexp = new RegExp('^' + ['Math'].join('|') + '$', 'i')
 
     this.token_types = {
-      eol: /^[\r\n]/,
+      eol: /^[\r\n]|;/,
       comma: /^,/,
 
-      comment: /^(;|\/\/)([^\r\n]*)/,
+      comment: /^\/\/([^\r\n]*)/,
 
       hex: /^\$([0-9A-F]+)|0x([0-9A-F]+)/i,
       number: /^([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)/,
@@ -128,11 +118,13 @@ Lexer = class {
       close_curly: /^\}/,
 
       symbol: /^[@\$_]/,
-      math: /^[\+\-\*\/%]/,
-      logic: /^[!&\|\^]/,
+      math: /^[\+\-\*\/%][^=]/,
+      logic: /^[!&\|\^][^=]/,
       comp: /^>|<|>=|<=|!=|==/,
 
-      assign: /^([=])[^=>]/,
+      assign: /^(=)[^=>]/,
+      math_assign: /^[\+\-\*\/%]=/,
+      logic_assign: /^[!&\|\^]=/,
       fn_assign: /^=>/,
     }
 
@@ -141,7 +133,6 @@ Lexer = class {
 
   reset (path, text) {
     this.errors = 0
-    this.parser = null
     this.path = path || ''
     this.text = text || ''
     this.length = this.text.length

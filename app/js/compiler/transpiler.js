@@ -43,15 +43,15 @@ a = node => {
 
     if (node.is('assign')) {
       t = {
-        tmpl: '#{scope}#{id} = #{expr};',
-        dat: { scope: d.id._scope ? d.id._scope + '.' : '', id: d.id.value, expr: e(d.expr) }
+        tmpl: '#{let}#{id} #{op} #{expr};',
+        dat: { let: node._let ? 'var ' : '', id: d.id.value, op: node.token.value, expr: e(d.expr) }
       }
     }
 
     else if (node.is('fn_assign')) {
       t = {
-        tmpl: '#{scope}#{id} = #{fn}',
-        dat: { scope: d.id._scope ? d.id._scope + '.' : '', id: d.id.value, fn: f(d.args, d.body, true) }
+        tmpl: '#{let}#{id} = #{fn}',
+        dat: { let: node._let ? 'var ' : '', id: d.id.value, fn: f(d.args, d.body, true) }
       }
     }
   }
@@ -69,20 +69,9 @@ c = (node, semi = false) => {
   let t = {}
   if (node) {
     let d = node.data || {}
-
-    if (node.is('fn')) {
-      if (node._field) {
-        t = {
-          tmpl: '.#{fn}(#{args})#{semi}',
-          dat: { fn: node.value, args: e(d.args, ', '), semi: semi ? ';' : '' }
-        }
-      }
-      else {
-        t = {
-          tmpl: '#{scope}#{fn}(#{args})#{semi}',
-          dat: { scope: node.token._scope ? node.token._scope + '.' : '', fn: node.value, args: e(d.args, ', '), semi: semi ? ';' : '' }
-        }
-      }
+    t = {
+      tmpl: '#{field}#{public}#{fn}(#{args})#{semi}',
+      dat: { field: node._field ? '.' : '', public: node.token._publics ? '_vm.publics.' : '', fn: node.value, args: e(d.args, ', '), semi: semi ? ';' : '' }
     }
   }
   return t
@@ -135,8 +124,8 @@ s = node => {
     }
     else if (node.is('for')) {
       t = {
-        tmpl: '{\nvar $s = {};\nfor (#{scope}#{v} = #{min_expr}; #{scope}#{v} < #{max_expr}; #{scope}#{v} += #{step_expr}) #{body}}',
-        dat: { scope: node.token._scope ? node.token._scope + '.' : '', v: d.v.value, min_expr: e(d.min_expr), max_expr: e(d.max_expr), step_expr: d.step_expr ? e(d.step_expr) : '1', body: b(d.body, false) }
+        tmpl: 'for (var #{v} = #{min_expr}; #{v} < #{max_expr}; #{v} += #{step_expr}) #{body}',
+        dat: { v: d.v.value, min_expr: e(d.min_expr), max_expr: e(d.max_expr), step_expr: d.step_expr ? e(d.step_expr) : '1', body: b(d.body, false) }
       }
     }
     else if (node.is('return')) {
@@ -159,14 +148,10 @@ s = node => {
 }
 
 // generate indented block of statement(s)
-b = (node, semi = false, args_def = null) => {
+b = (node, semi = false) => {
   let str = l('{')
 
   indent++
-
-  if (!_.isNull(args_def)) {
-    str += l(i(_.template('var $s = {#{args}};')({ args: args_def })))
-  }
 
   if (_.isArray(node)) {
     for (let n of node) {
@@ -195,60 +180,68 @@ e = (node, separator) => {
     }
     str = a.join(separator || '')
   }
-  else if (node) {
-    let d = node.data || {}
-    let t = {}
+  else {
+    let d = node && node.data || {}
+    let t = { tmpl: '', dat: {} }
 
-    if (_.isString(node)) {
-      t = {
-        tmpl: '#{node}',
-        dat: { node }
+    if (node) {
+      if (_.isString(node)) {
+        t = {
+          tmpl: '#{node}',
+          dat: { node }
+        }
       }
-    }
-    else if (node.is('fn')) {
-      t = c(node)
-    }
-    else if (node.is('fn_assign')) {
-      t = {
-        tmpl: '#{fn}',
-        dat: { fn: f(d.args, d.body, false) }
+      else if (node.is('fn')) {
+        t = c(node)
       }
-    }
-    else if (node.is('open_bracket')) {
-      t = {
-        tmpl: '[#{args}]#{fields}',
-        dat: { args: e(d.args, ', '), fields: d.fields ? e(d.fields, '') : '' }
+      else if (node.is('fn_assign')) {
+        t = {
+          tmpl: '#{fn}',
+          dat: { fn: f(d.args, d.body, false) }
+        }
       }
-    }
-    else if (node.is('open_curly')) {
-      let def = _.map(d.def, f => _.template('#{value}: #{expr}')({ value: f.value, expr: e(f.data.expr) }))
-      t = {
-        tmpl: '{#{def}}#{fields}',
-        dat: { def: e(def, ', '), fields: d.fields ? e(d.fields, '') : '' }
+      else if (node.is('open_bracket')) {
+        t = {
+          tmpl: '[#{args}]#{fields}',
+          dat: { args: e(d.args, ', '), fields: d.fields ? e(d.fields, '') : '' }
+        }
       }
-    }
-    else if (node.is(['math', 'logic', 'comp'])) {
-      t = {
-        tmpl: '#{left} #{op} #{right}',
-        dat: { op: node.value, left: e(d.left), right: e(d.right) }
+      else if (node.is('open_curly')) {
+        let def = _.map(d.def, f => _.template('#{value}: #{expr}')({ value: f.value, expr: e(f.data.expr) }))
+        t = {
+          tmpl: '{#{def}}#{fields}',
+          dat: { def: e(def, ', '), fields: d.fields ? e(d.fields, '') : '' }
+        }
       }
-    }
-    else if (node.is(['var', 'fn'])) {
-      t = {
-        tmpl: '#{scope}#{field}#{value}#{fields}',
-        dat: { scope: node.token._scope ? node.token._scope + '.' : '', field: node._field ? '.' : '', value: node.value, fields: d.fields ? e(d.fields, '') : '' }
+      else if (node.is(['math', 'logic', 'comp'])) {
+        t = {
+          tmpl: '#{left} #{op} #{right}',
+          dat: { op: node.value, left: e(d.left), right: e(d.right) }
+        }
       }
-    }
-    else if (node.is(['char', 'string'])) {
-      t = {
-        tmpl: '#{value}',
-        dat: { value: string(node.value) }
+      else if (node.is(['char', 'string'])) {
+        t = {
+          tmpl: '#{value}',
+          dat: { value: string(node.value) }
+        }
+      }
+      else if (node.is('id')) {
+        t = {
+          tmpl: '#{field}#{value}#{fields}',
+          dat: { field: node._field ? '.' : '', value: node.value, fields: d.fields ? e(d.fields, '') : '' }
+        }
+      }
+      else {
+        t = {
+          tmpl: '#{value}',
+          dat: { value: node.value }
+        }
       }
     }
     else {
       t = {
-        tmpl: '#{value}',
-        dat: { value: node.value }
+        tmpl: 'undefined',
+        dat: {}
       }
     }
 
@@ -297,7 +290,6 @@ Transpiler = class {
   }
 
   code_start () {
-    this.writeln('var $g = {};')
     this.writeln()
   }
 

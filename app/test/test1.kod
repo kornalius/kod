@@ -2,49 +2,51 @@
 
 #MY_CONST 2 * (3 + 4)
 
-log true, false, PI
+log(true, false, PI)
 
 let x
+let y = 10
 let i = 10
 let j = 20
 let z = [10, MY_CONST]
 let s = { :k 10 :f => (x) return x end }
 
 x = 100
+y += 20
 
-log i j x z[1] MY_CONST
+log(i j x z[1] MY_CONST, y)
 
 if 30 > 20
-  log "greater"
+  log("greater")
   // i = 23
   if (i > 20)
-    log "a"
+    log("a")
   else
-    log "b"
+    log("b")
   end
 else if (20 > (3 + 4) * i)
-  log "cool"
+  log("cool")
 else
-  log "lesser"
+  log("lesser")
 
 end
 
 let t = 20
 while (i < 20)
   let t = 10
-  log t
+  log(t)
   i = i + 1
 end
-log t
+log(t)
 
 let f => (a, b, c)
-  log a / b + c
+  log(a / b + c)
 end
 
-f 10, 20, 30
+f(10, 20, 30)
 
-log s.k, s.f(2), s.f(103)
+log(s.k, s.f(2), s.f(103))
 
 for i = 1 to s.k
-  log i
+  log(i)
 end
