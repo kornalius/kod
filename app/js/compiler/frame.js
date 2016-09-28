@@ -10,43 +10,25 @@ Frames = class {
   }
 
   reset () {
-    this.list = []
     this.current = null
-    this.global = null
   }
 
-  start (frame_type) {
-    if (!this.global) {
-      this.global = new Frame(this)
-      this.list.push(this.global)
-      this.current = this.global
-      return this.current
-    }
-    if (this.current && this.current.is_local) {
-      this.list.unshift(this.current)
-    }
-    this.current = new Frame(this, frame_type)
-    return this.current
-  }
+  start (type) { this.current = new Frame(this, this.current, type) }
 
-  end () {
-    if (this.current.is_local) {
-      this.current = this.list.shift()
-    }
-    return this.current
-  }
+  end () { this.current = this.current.parent }
 
   add (item_type, node) { return this.current.add(item_type, node) }
 
   exists (name) {
-    let i = null
-    if (this.current) {
-      i = this.current.exists(name)
-      if (!i) {
-        i = this.global.exists(name)
+    let c = this.current
+    while (c) {
+      let i = c.exists(name)
+      if (i) {
+        return i
       }
+      c = c.parent
     }
-    return i
+    return null
   }
 
   fn_exists (name) {
@@ -71,9 +53,9 @@ FrameItem = class {
 
   get data () { return this.node.data }
 
-  get name () { return this.data.id.value }
+  get name () { return this.node.value }
 
-  get type () { return this.data.type.value }
+  get type () { return this.node.type }
 
   get is_var () { return this.item_type === 'var' }
 
@@ -87,15 +69,18 @@ FrameItem = class {
 
 Frame = class {
 
-  constructor (frames, frame_type) {
+  constructor (frames, parent, type) {
     this.frames = frames
-    this.frame_type = frame_type
+    this.parent = parent
+    this.type = type
     this.items = []
   }
 
-  get is_local () { return this !== this.frames.global }
+  get name () { return this.parent ? '$s' : '$g' }
 
-  get is_global () { return this === this.frames.global }
+  get is_local () { return this.parent !== null }
+
+  get is_global () { return this.parent === null }
 
   add (item_type, node) {
     let i = new FrameItem(this, item_type, node)
@@ -104,14 +89,7 @@ Frame = class {
     return i
   }
 
-  exists (name) {
-    for (let i of this.items) {
-      if (i.name === name) {
-        return i
-      }
-    }
-    return null
-  }
+  exists (name) { return _.find(this.items, { name }) }
 
   fn_exists (name) {
     let i = this.exists(name)

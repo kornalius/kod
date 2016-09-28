@@ -1,13 +1,16 @@
 import { delay, runtime_error } from '../globals.js'
 
-import { Tokenizer } from '../compiler/tokenizer/tokenizer.js'
-import { Lexer } from '../compiler/lexer/lexer.js'
+import { Lexer } from '../compiler/lexer.js'
+import { Parser } from '../compiler/parser.js'
 import { Transpiler } from '../compiler/transpiler.js'
 
 import { Interrupt } from './int.js'
 import { Debugger } from './dbg.js'
 
 import { CpuChip } from './chips/cpu.js'
+import { KeyboardChip } from './chips/keyboard.js'
+import { MouseChip } from './chips/mouse.js'
+import { PaletteChip } from './chips/palette.js'
 
 export var VM
 
@@ -19,6 +22,20 @@ VM = class {
 
   constructor () {
     window._vm = this
+
+    this.PObject = {
+      get: (target, prop) => {
+        let value = target[prop]
+        return !_.isFunction(value) ? () => value : value
+      }
+    }
+
+    this.PArray = {
+      get: (target, prop) => {
+        let value = target[prop]
+        return !_.isFunction(value) || prop === 'length' ? () => value : value
+      }
+    }
 
     this.publics = {}
 
@@ -39,7 +56,10 @@ VM = class {
 
     if (cold) {
       this.chips = {
-        cpu: new CpuChip(this)
+        cpu: new CpuChip(this),
+        keyboard: new KeyboardChip(this),
+        mouse: new MouseChip(this),
+        palette: new PaletteChip(this),
       }
     }
   }
@@ -82,17 +102,17 @@ VM = class {
     this.fn = null
     this.code = null
 
-    let tokenizer = new Tokenizer()
-    tokenizer.run(uri)
+    let lexer = new Lexer(this)
+    lexer.run(uri)
 
-    let lexer = new Lexer(tokenizer)
+    let parser = new Parser(lexer)
     let transpiler = new Transpiler()
 
-    if (tokenizer.errors === 0) {
-      lexer.run()
+    if (lexer.errors === 0) {
+      parser.run()
 
-      if (lexer.errors === 0) {
-        this.code = transpiler.run(lexer.nodes)
+      if (parser.errors === 0) {
+        this.code = transpiler.run(parser.nodes)
       }
     }
 
@@ -100,8 +120,8 @@ VM = class {
       this.fn = new Function(['args'], this.code)
     }
 
-    tokenizer.dump()
     lexer.dump()
+    parser.dump()
     transpiler.dump()
   }
 

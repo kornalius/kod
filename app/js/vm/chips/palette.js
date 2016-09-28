@@ -1,17 +1,20 @@
 import { Chip } from '../chip.js'
 
-export var Palette
+export var PaletteChip
 
-Palette = class extends Chip {
+PaletteChip = class extends Chip {
 
   constructor (vm, count) {
     super(vm)
 
     this.count = count || 32
-    this.data = []
+    this.data = new Array(this.count)
+
+    this.reset()
 
     this.publicize([
-      { name: 'count', readonly: true },
+      { name: 'p_get', value: c => this.data[c] },
+      { name: 'p_count', value: 'count', readonly: true },
       { name: 'red' },
       { name: 'green' },
       { name: 'blue' },

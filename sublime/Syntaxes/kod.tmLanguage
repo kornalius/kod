@@ -18,43 +18,31 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(byte|i8|int8|ubyte|u8|uint8)\b</string>
-			<key>name</key>
-			<string>keyword.control</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>(short|word|i16|int16|ushort|uword|u16|uint16)\b</string>
-			<key>name</key>
-			<string>keyword.control</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>(int|dword|i32|int32|uint|udword|u32|uint32)\b</string>
-			<key>name</key>
-			<string>keyword.control</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>(float|f32|float32|let)\b</string>
-			<key>name</key>
-			<string>keyword.control</string>
-		</dict>
-		<dict>
-			<key>match</key>
 			<string>\b(true|false)\b</string>
 			<key>name</key>
 			<string>support.constant</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(print)\b</string>
+			<string>(\#[A-Za-z_][A-Za-z0-9_\.]*)</string>
+			<key>name</key>
+			<string>support.constant</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(let)\b</string>
 			<key>name</key>
 			<string>keyword.other</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(=)[^=]</string>
+			<string>(=)[^=&gt;]</string>
+			<key>name</key>
+			<string>keyword.operator</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(=&gt;)</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>
@@ -66,19 +54,19 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(\+|\-|\/|\*|\!|\&amp;|\|)</string>
+			<string>(\+|\-|\/[^\/]|\*|\!|\&amp;|\|)</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(\[|\]|\{|\}|\(|\)|,)</string>
+			<string>(\[|\]|\{|\}|\(|\)|\,)</string>
 			<key>name</key>
 			<string>punctuation.definition</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>;[^\r\n]*</string>
+			<string>(;|\/\/)[^\r\n]*</string>
 			<key>name</key>
 			<string>comment.line</string>
 		</dict>

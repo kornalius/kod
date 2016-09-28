@@ -1,14 +1,14 @@
-import { error } from '../../globals.js'
+import { error } from '../globals.js'
 import { statements } from './syntax.js'
 import { Frames } from './frame.js'
 
-export var Lexer
+export var Parser
 
-Lexer = class {
+Parser = class {
 
-  constructor (tokenizer) {
-    this.tokenizer = tokenizer
-    this.tokenizer.lexer = this
+  constructor (lexer) {
+    this.lexer = lexer
+    this.lexer.parser = this
     this.frames = new Frames(this)
     this.reset()
   }
@@ -17,6 +17,7 @@ Lexer = class {
     this.errors = 0
     this.offset = 0
     this.nodes = []
+    this.constants = {}
     this.frames.reset()
   }
 
@@ -28,7 +29,7 @@ Lexer = class {
 
   get length () { return this.tokens.length }
 
-  get tokens () { return this.tokenizer.tokens }
+  get tokens () { return this.lexer.tokens }
 
   get token () { return this.token_at(this.offset) }
 
@@ -77,7 +78,7 @@ Lexer = class {
   }
 
   dump () {
-    console.info('lexer dump')
+    console.info('parser dump')
     console.log(this.nodes)
     console.log('')
   }

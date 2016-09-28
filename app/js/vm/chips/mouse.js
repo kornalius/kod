@@ -12,12 +12,11 @@ MouseChip = class extends Chip {
     this.btns = 0
 
     this.publicize([
-      { name: 'x', readonly: true },
-      { name: 'y', readonly: true },
-      { name: 'btns', readonly: true },
-      { name: 'left', value: () => this.data.btns & 0x01 },
-      { name: 'middle', value: () => this.data.btns & 0x02 },
-      { name: 'right', value: () => this.data.btns & 0x04 },
+      { name: 'm_x', value: 'x', readonly: true },
+      { name: 'm_y', value: 'y', readonly: true },
+      { name: 'm_left', value: () => this.btns & 0x01 },
+      { name: 'm_middle', value: () => this.btns & 0x02 },
+      { name: 'm_right', value: () => this.btns & 0x04 },
     ])
 
     // this.video = _vm.ports[_vm.port_by_name('vid')]
@@ -45,16 +44,6 @@ MouseChip = class extends Chip {
     //   stage.on('mouseupoutside', this.onMouseUp.bind(this))
     //   stage.on('touchendoutside', this.onMouseUp.bind(this))
     // }
-  }
-
-  reset () {
-    this.header.reset()
-    super.reset()
-  }
-
-  shut () {
-    this.header.release()
-    super.shut()
   }
 
   onMouseDown (e) {

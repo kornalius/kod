@@ -1,4 +1,4 @@
-import { reserved } from '../compiler/tokenizer/token.js'
+import _ from 'lodash'
 
 export class Chip {
 
@@ -7,31 +7,33 @@ export class Chip {
   }
 
   publicize (data) {
+    let that = this
     let publics = this.vm.publics
     for (let d of data) {
       let name = d.name
-      let prop = d.name
+      let prop = name
       if (d.value) {
         if (_.isFunction(d.value)) {
-          publics[name] = d.value.bind(this)
-          reserved[name] = 'fn'
+          publics[name] = d.value.bind(that)
           continue
         }
+        else if (_.isString(d.value)) {
+          prop = d.value
+        }
       }
-      if (_.isFunction(this[prop])) {
-        publics[name] = this[prop].bind(this)
-        reserved[name] = 'fn'
+
+      if (_.isFunction(that[prop])) {
+        publics[name] = that[prop].bind(that)
       }
       else {
         let description = {
           enumerable: true,
-          get: () => publics[prop],
+          get: () => that[prop],
         }
         if (!d.readonly) {
-          description.set = value => { publics[prop] = value }
+          description.set = value => { that[prop] = value }
         }
         Object.defineProperty(publics, name, description)
-        reserved[name] = 'var'
       }
     }
   }

@@ -1,22 +1,35 @@
+import _ from 'lodash'
 import { Token } from './token.js'
 
-export var Tokenizer
+export var Lexer
 
-Tokenizer = class {
+Lexer = class {
 
-  constructor (text) {
+  constructor (vm, text) {
+    this.vm = vm
+
+    this.publics_regexp = new RegExp('^' + _.keys(this.vm.publics).join('|') + '$', 'i')
+
     this.token_types = {
       eol: /^[\r\n]/,
       comma: /^,/,
-      colon: /^:/,
 
-      comment: /^;([^\r\n]*)/,
+      comment: /^(;|\/\/)([^\r\n]*)/,
 
       hex: /^\$([0-9A-F]+)|0x([0-9A-F]+)/i,
       number: /^([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)/,
+
       string: /^"([^"]*)"/,
       char: /^'(.)'/,
-      id: /^([A-Z_][A-Z_0-9\.]*)/i,
+
+      include: /^#"([^"]*)"/i,
+
+      const: /^#([A-Z_][A-Z_0-9]*)/i,
+
+      key: /^:([A-Z_][A-Z_0-9]*)/i,
+
+      id_field: /^\.([A-Z_][A-Z_0-9]*)/i,
+      id: /^([A-Z_][A-Z_0-9]*)/i,
 
       open_paren: /^\(/,
       close_paren: /^\)/,
@@ -25,8 +38,8 @@ Tokenizer = class {
       open_curly: /^\{/,
       close_curly: /^\}/,
 
-      symbol: /^[@#\$%_]/,
-      math: /^[\+\-\*\/]/,
+      symbol: /^[@\$_]/,
+      math: /^[\+\-\*\/%]/,
       logic: /^[!&\|\^]/,
       comp: /^>|<|>=|<=|!=|==/,
 
@@ -39,13 +52,14 @@ Tokenizer = class {
 
   reset (text) {
     this.errors = 0
-    this.lexer = null
+    this.parser = null
     this.text = text || ''
     this.length = this.text.length
     this.offset = 0
     this.line = 1
     this.column = 1
     this.tokens = []
+    this.constants = {}
     return this
   }
 
@@ -92,7 +106,7 @@ Tokenizer = class {
 
   next () {
     let { token, offset, len } = this.peek()
-    while (token._type === 'comment') {
+    while (token && token._type === 'comment') {
       let t = this.peek()
       token = t.token
       offset = t.offset
@@ -101,10 +115,41 @@ Tokenizer = class {
       this.column += len + 1
     }
     if (token) {
-      this.tokens.push(token)
-      this.offset = offset
-      this.column += len + 1
-      if (token.is('eol')) {
+      if (token.type === 'const') {
+        let c = []
+        this.constants[token.value.toLowerCase()] = c
+        this.offset = offset
+        this.column += len + 1
+        while (true) {
+          let p = this.peek()
+          token = p.token
+          if (token) {
+            this.offset = p.offset
+            this.column += p.len + 1
+          }
+          if (!token || token.is('eol')) {
+            break
+          }
+          if (token) {
+            c.push(token)
+          }
+        }
+      }
+      else if (token.type === 'include') {
+        debugger;
+      }
+      else {
+        let c = this.constants[token.value.toLowerCase()]
+        if (c) {
+          this.tokens = this.tokens.concat(c)
+        }
+        else {
+          this.tokens.push(token)
+        }
+        this.offset = offset
+        this.column += len + 1
+      }
+      if (token && token.is('eol')) {
         this.line++
         this.column = 1
       }
@@ -121,7 +166,7 @@ Tokenizer = class {
   }
 
   dump () {
-    console.info('tokenizer dump')
+    console.info('lexer dump')
     console.log(this.tokens)
     console.log('')
   }

@@ -1,0 +1,46 @@
+#"globals"
+
+#MY_CONST 2 * (3 + 4)
+#false 0
+#true 1
+
+let x
+let i = 10
+let j = 20
+let z = [10, MY_CONST]
+let s = { :k 10 :f => (x) return x end }
+
+x = 100
+
+log i j x z[1] MY_CONST
+
+if 30 > 20
+  log "greater"
+  // i = 23
+  if (i > 20)
+    log "a"
+  else
+    log "b"
+  end
+else if (20 > (3 + 4) * i)
+  log "cool"
+else
+  log "lesser"
+
+end
+
+let t = 20
+while (i < 20)
+  let t = 10
+  log t
+  i = i + 1
+end
+log t
+
+let f => (a, b, c)
+  log a / b + c
+end
+
+f 10, 20, 30
+
+log s.k, s.f(2), s.f 103

@@ -12,29 +12,14 @@ patterns:
   - name: keyword.control
     match: (if|else|for|end|while|break|return)\b
 
-  - name: keyword.control
-    match: (i8|int8||u8|byte|uint8|ubyte)\b
-
-  - name: keyword.control
-    match: (i16|int16|int|short|word|u16|uint16|uint|ushort|uword)\b
-
-  - name: keyword.control
-    match: (i32|int32|long|dword|u32|uint32|ulong|udword|let)\b
-
-  - name: keyword.control
-    match: (f32|float|float32)\b
-
-  - name: keyword.control
-    match: (f64|float64|double)\b
-
-  - name: keyword.control
-    match: (string)\b
-
   - name: support.constant
     match: \b(true|false)\b
 
+  - name: support.constant
+    match: (\#[A-Za-z_][A-Za-z0-9_\.]*)
+
   - name: keyword.other
-    match: (print)\b
+    match: (let)\b
 
   - name: keyword.operator
     match: (=)[^=>]
@@ -46,13 +31,13 @@ patterns:
     match: (==|\!=|<|<=|>|>=)
 
   - name: keyword.operator
-    match: (\+|\-|\/|\*|\!|\&|\|)
+    match: (\+|\-|\/[^\/]|\*|\!|\&|\|)
 
   - name: punctuation.definition
     match: (\[|\]|\{|\}|\(|\)|\,)
 
   - name: comment.line
-    match: ;[^\r\n]*
+    match: (;|\/\/)[^\r\n]*
 
   - name: entity.name.function
     match: ([A-Za-z_][A-Za-z0-9_\.]*)

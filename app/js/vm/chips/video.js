@@ -1,5 +1,4 @@
 import { Chip } from '../chip.js'
-import { Struct } from '../struct.js'
 
 PIXI.Point.prototype.distance = target => {
   Math.sqrt((this.x - target.x) * (this.x - target.x) + (this.y - target.y) * (this.y - target.y))

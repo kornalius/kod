@@ -12,27 +12,26 @@ KeyboardChip = class extends Chip {
     this.keys = {}
 
     this.publicize([
-      { name: 'keys', readonly: true },
-      { name: 'mods', readonly: true },
-      { name: 'joystick', readonly: true },
-      { name: 'shift', value: () => this.mods & 0x01 },
-      { name: 'ctrl', value: () => this.mods & 0x02 },
-      { name: 'alt', value: () => this.mods & 0x04 },
       { name: 'key', value: which => this.keys[which] },
+
+      { name: 'k_shift', value: () => this.mods & 0x01 },
+      { name: 'k_ctrl', value: () => this.mods & 0x02 },
+      { name: 'k_alt', value: () => this.mods & 0x04 },
+
+      { name: 'j_btn0', value: idx => this.joystick & 0x10 },
+      { name: 'j_btn1', value: idx => this.joystick & 0x20 },
+      { name: 'j_btn2', value: idx => this.joystick & 0x40 },
+      { name: 'j_btn3', value: idx => this.joystick & 0x80 },
+      { name: 'j_btn4', value: idx => this.joystick & 0x100 },
+
+      { name: 'j_up', value: () => this.joystick & 0x01 },
+      { name: 'j_down', value: () => this.joystick & 0x02 },
+      { name: 'j_right', value: () => this.joystick & 0x04 },
+      { name: 'j_left', value: () => this.joystick & 0x08 },
     ])
 
     window.addEventListener('keydown', this.onKeydown.bind(this))
     window.addEventListener('keyup', this.onKeyup.bind(this))
-  }
-
-  reset () {
-    this.header.reset()
-    super.reset()
-  }
-
-  shut () {
-    this.header.release()
-    super.shut()
   }
 
   onKeydown (e) {
@@ -93,8 +92,24 @@ KeyboardChip = class extends Chip {
         }
         break
 
-      case 32: // button 1
+      case 90: // button 0
         this.joystick |= 0x10
+        break
+
+      case 88: // button 1
+        this.joystick |= 0x20
+        break
+
+      case 67: // button 2
+        this.joystick |= 0x40
+        break
+
+      case 32: // button 3
+        this.joystick |= 0x80
+        break
+
+      case 13: // button 4
+        this.joystick |= 0x100
         break
     }
 
@@ -160,8 +175,24 @@ KeyboardChip = class extends Chip {
         }
         break
 
-      case 32: // button 1
+      case 90: // button 0
         this.joystick &= ~0x10
+        break
+
+      case 88: // button 1
+        this.joystick &= ~0x20
+        break
+
+      case 67: // button 2
+        this.joystick &= ~0x40
+        break
+
+      case 32: // button 3
+        this.joystick &= ~0x80
+        break
+
+      case 13: // button 4
+        this.joystick &= ~0x100
         break
     }
 

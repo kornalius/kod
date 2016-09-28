@@ -3,8 +3,8 @@ export var Node
 
 Node = class {
 
-  constructor (lexer, token, data) {
-    this.lexer = lexer
+  constructor (parser, token, data) {
+    this.parser = parser
     this.token = token
     this.data = data || {}
   }
