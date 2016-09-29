@@ -107,8 +107,11 @@ Lexer = class {
 
       key: /^:([A-Z_][A-Z_0-9]*)/i,
 
-      id_field: /^\.([A-Z_][A-Z_0-9]*)/i,
       id: /^([A-Z_][A-Z_0-9]*)/i,
+      id_field: /^\.([A-Z_][A-Z_0-9]*)/i,
+
+      this: /^@(?=[^A-Z_])/i,
+      this_field: /^@([A-Z_][A-Z_0-9]*)/i,
 
       open_paren: /^\(/,
       close_paren: /^\)/,
@@ -117,7 +120,7 @@ Lexer = class {
       open_curly: /^\{/,
       close_curly: /^\}/,
 
-      symbol: /^[@\$_]/,
+      symbol: /^[\$]/,
       math: /^[\+\-\*\/%][^=]/,
       logic: /^[!&\|\^][^=]/,
       comp: /^>|<|>=|<=|!=|==/,
@@ -187,6 +190,7 @@ Lexer = class {
 
   next () {
     let { token, offset, len } = this.peek()
+
     while (token && token._type === 'comment') {
       let t = this.peek()
       token = t.token
@@ -195,6 +199,7 @@ Lexer = class {
       this.offset = offset
       this.column += len + 1
     }
+
     if (token) {
       if (token.type === 'const') {
         let c = []
@@ -216,6 +221,7 @@ Lexer = class {
           }
         }
       }
+
       else if (token.type === 'include') {
         this.offset = offset
         this.column += len + 1
@@ -233,7 +239,6 @@ Lexer = class {
             pn = ''
           }
         }
-
         if (pn !== '') {
           let src = fs.readFileSync(pn, 'utf8')
           let lx = new Lexer(this.vm)
@@ -244,9 +249,10 @@ Lexer = class {
           }
         }
       }
+
       else {
         let c = this.constants[token.value.toLowerCase()]
-        if (c) {
+        if (_.isArray(c)) {
           this.tokens = this.tokens.concat(c)
         }
         else {
@@ -255,11 +261,13 @@ Lexer = class {
         this.offset = offset
         this.column += len + 1
       }
+
       if (token && token.is('eol')) {
         this.line++
         this.column = 1
       }
     }
+
     return token
   }
 

@@ -1,0 +1,11 @@
+<snippet>
+	<content><![CDATA[
+let ${1:name} => (${2:args})
+  ${3:...}
+end
+
+]]></content>
+    <tabTrigger>=&gt;</tabTrigger>
+    <scope>source.kod</scope>
+    <description>kod function</description>
+</snippet>

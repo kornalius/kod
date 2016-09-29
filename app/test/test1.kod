@@ -50,3 +50,22 @@ log(s.k, s.f(2), s.f(103))
 for i = 1 to s.k
   log(i)
 end
+
+class myClass
+
+  constructor => ()
+
+    let in_fn => (a)
+      log(a)
+    end
+
+    @x = 10
+    @y = 20
+    log(@)
+    in_fn(100)
+  end
+
+end
+
+let c = new myClass()
+

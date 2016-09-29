@@ -12,27 +12,27 @@
 	<array>
 		<dict>
 			<key>match</key>
-			<string>(if|else|for|end|while|break|return)\b</string>
+			<string>(if|else|for|to|end|while|break|continue|return|let|class)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(true|false)\b</string>
+			<string>\b(true|false|null|nil)\b</string>
 			<key>name</key>
-			<string>support.constant</string>
+			<string>constant.language</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(\#[A-Za-z_][A-Za-z0-9_\.]*)</string>
+			<string>(\#[A-Za-z_][A-Za-z0-9_]*)</string>
 			<key>name</key>
-			<string>support.constant</string>
+			<string>constant.other</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(let)\b</string>
+			<string>(\#"[^"]*")</string>
 			<key>name</key>
-			<string>keyword.other</string>
+			<string>support.other</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -41,10 +41,61 @@
 			<string>keyword.operator</string>
 		</dict>
 		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>variable.language meta.label.identifier</string>
+				</dict>
+			</dict>
 			<key>match</key>
-			<string>(=&gt;)</string>
+			<string>(let)\s*([A-Za-z_][A-Za-z0-9_]*)</string>
 			<key>name</key>
 			<string>keyword.operator</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name meta.function.identifier</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.operator</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>([A-Za-z_][A-Za-z0-9_]*)\s*(=&gt;)</string>
+			<key>name</key>
+			<string>keyword.other</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity meta.function.identifier</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.operator</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(\:[A-Za-z_][A-Za-z0-9_]*)\s*(=&gt;)</string>
+			<key>name</key>
+			<string>keyword.other</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -54,39 +105,51 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(\+|\-|\/[^\/]|\*|\!|\&amp;|\|)</string>
+			<string>(\+|\-|\/[^\/]|\*|\!|\&amp;|\|)=?</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(\[|\]|\{|\}|\(|\)|\,)</string>
+			<string>(\[|\]|\{|\}|\(|\)|\,|\;|\.)</string>
 			<key>name</key>
-			<string>punctuation.definition</string>
+			<string>punctuation.separator</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(;|\/\/)[^\r\n]*</string>
+			<string>(\/\/[^\r\n]*)</string>
 			<key>name</key>
 			<string>comment.line</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>([A-Za-z_][A-Za-z0-9_\.]*)</string>
+			<string>([A-Za-z_][A-Za-z0-9_]*)(?=\s*\()</string>
 			<key>name</key>
-			<string>entity.name.function</string>
+			<string>entity.name</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>([A-Za-z_][A-Za-z0-9_\.]*)</string>
+			<string>([A-Za-z_][A-Za-z0-9_]*)(?!\s*\()</string>
 			<key>name</key>
-			<string>storage.type.variable</string>
+			<string>variable.language</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\.(include|bounds|debug)\b</string>
+			<string>(?=\.)([A-Za-z_][A-Za-z0-9_]*)(?=\s*\()</string>
 			<key>name</key>
-			<string>keyword.other</string>
+			<string>entity.name</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(?=\.)([A-Za-z_][A-Za-z0-9_]*)(?!\s*\()</string>
+			<key>name</key>
+			<string>variable.language</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(\:[A-Za-z_][A-Za-z0-9_]*)</string>
+			<key>name</key>
+			<string>storage.type</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -94,13 +157,13 @@
 			<key>end</key>
 			<string>"</string>
 			<key>name</key>
-			<string>string.quoted.double</string>
+			<string>string.quoted</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\\.</string>
 			<key>name</key>
-			<string>constant.character.escape</string>
+			<string>constant.other</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -112,19 +175,19 @@
 			<key>match</key>
 			<string>\$[0-9a-fA-F]+</string>
 			<key>name</key>
-			<string>constant.numeric.hex</string>
+			<string>constant.numeric</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>0x[0-9a-fA-F]+</string>
 			<key>name</key>
-			<string>constant.numeric.hex</string>
+			<string>constant.numeric</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b\d+\b</string>
 			<key>name</key>
-			<string>constant.numeric.decimal</string>
+			<string>constant.numeric</string>
 		</dict>
 	</array>
 	<key>scopeName</key>

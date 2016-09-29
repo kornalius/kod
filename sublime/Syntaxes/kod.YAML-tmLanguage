@@ -3,66 +3,83 @@ name: kod
 scopeName: source.kod
 fileTypes: [.kod]
 uuid: c99f17c6-9642-4847-b3ec-16e0580ebe16
+# foldingStartMarker: ^\s*(if|else|for|while)\b
+# foldingStopMarker: ^\s*end\b}
 
 patterns:
 
-  # foldingStartMarker: ^\s*(if|else|for|while)\b
-  # foldingStopMarker: ^\s*end\b}
-
   - name: keyword.control
-    match: (if|else|for|end|while|break|return)\b
+    match: (if|else|for|to|end|while|break|continue|return|let|class|new)\b
 
-  - name: support.constant
-    match: \b(true|false)\b
+  - name: constant.language
+    match: \b(true|false|null|nil)\b
 
-  - name: support.constant
-    match: (\#[A-Za-z_][A-Za-z0-9_\.]*)
+  - name: constant.other
+    match: (\#[A-Za-z_][A-Za-z0-9_]*)
 
-  - name: keyword.other
-    match: (let)\b
+  - name: support.other
+    match: (\#"[^"]*")
 
   - name: keyword.operator
     match: (=)[^=>]
 
   - name: keyword.operator
-    match: (=>)
+    match: (let)\s*([A-Za-z_][A-Za-z0-9_]*)
+    captures:
+       '1': { name: keyword.control }
+       '2': { name: variable.language meta.label.identifier }
+
+  - name: keyword.other
+    match: ([A-Za-z_][A-Za-z0-9_]*)\s*(=>)
+    captures:
+      '1': { name: entity.name meta.function.identifier }
+      '2': { name: keyword.operator }
+
+  - name: keyword.other
+    match: (\:[A-Za-z_][A-Za-z0-9_]*)\s*(=>)
+    captures:
+      '1': { name: entity meta.function.identifier }
+      '2': { name: keyword.operator }
 
   - name: keyword.operator
     match: (==|\!=|<|<=|>|>=)
 
   - name: keyword.operator
-    match: (\+|\-|\/[^\/]|\*|\!|\&|\|)
+    match: (\+|\-|\/[^\/]|\*|\!|\&|\|)=?
 
-  - name: punctuation.definition
-    match: (\[|\]|\{|\}|\(|\)|\,)
+  - name: punctuation.separator
+    match: (\[|\]|\{|\}|\(|\)|\,|\;|\.)
 
   - name: comment.line
-    match: (;|\/\/)[^\r\n]*
+    match: (\/\/[^\r\n]*)
 
-  - name: entity.name.function
-    match: ([A-Za-z_][A-Za-z0-9_\.]*)
+  - name: entity.name
+    match: ([A-Za-z_][A-Za-z0-9_]*)(?=\s*\()
 
-  - name: storage.type.variable
-    match: ([A-Za-z_][A-Za-z0-9_\.]*)
+  - name: entity.name
+    match: (?=(\.|\@)([A-Za-z_][A-Za-z0-9_]*)(?=\s*\()
 
-  - name: keyword.other
-    match: \.(include|bounds|debug)\b
+  - name: variable.language
+    match: (?=\.|\@)([A-Za-z_][A-Za-z0-9_]*)(?!\s*\()
 
-  - name: string.quoted.double
+  - name: storage.type
+    match: (\:[A-Za-z_][A-Za-z0-9_]*)
+
+  - name: string.quoted
     begin: '"'
     end: '"'
 
-  - name: constant.character.escape
+  - name: constant.other
     match: \\.
 
   - name: constant.character
     match: \'.\'
 
-  - name: constant.numeric.hex
+  - name: constant.numeric
     match: \$[0-9a-fA-F]+
 
-  - name: constant.numeric.hex
+  - name: constant.numeric
     match: 0x[0-9a-fA-F]+
 
-  - name: constant.numeric.decimal
+  - name: constant.numeric
     match: \b\d+\b

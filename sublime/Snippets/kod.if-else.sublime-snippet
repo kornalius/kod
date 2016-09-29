@@ -8,6 +8,6 @@ end
 
 ]]></content>
     <tabTrigger>ifel</tabTrigger>
-    <scope>source.assembly.dx32</scope>
-    <description>DX32 if-else block</description>
+    <scope>source.kod</scope>
+    <description>kod if-else block</description>
 </snippet>

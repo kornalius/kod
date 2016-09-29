@@ -1,0 +1,11 @@
+<snippet>
+	<content><![CDATA[
+while(${1:EXPR})
+	$SELECTION
+end
+
+]]></content>
+    <tabTrigger>wh</tabTrigger>
+    <scope>source.kod</scope>
+    <description>kod while loop</description>
+</snippet>

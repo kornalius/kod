@@ -1,255 +1,6 @@
 import _ from 'lodash'
 
-export var comma
-export var string
-export var eol
-export var indent
-export var l
-export var i
-export var a
-export var f
-export var c
-export var s
-export var b
-export var e
-
 export var Transpiler
-
-string = value => '\'' + value.replace(/'/g, '\'') + '\''
-
-comma = nodes => {
-  let a = []
-  for (let n of nodes) {
-    a.push(n instanceof Node ? e(n) : n)
-  }
-  return a.join(', ')
-}
-
-eol = s => s ? ';' : ''
-
-indent = 0
-
-// generate line
-l = str => str + (!_.endsWith(str, '\n') ? '\n' : '')
-
-// indent line
-i = str => _.padStart('', indent * 2) + str
-
-// generate assignment
-a = node => {
-  let t = {}
-  if (node) {
-    let d = node.data || {}
-
-    if (node.is('assign')) {
-      t = {
-        tmpl: '#{let}#{id} #{op} #{expr};',
-        dat: { let: node._let ? 'var ' : '', id: d.id.value, op: node.token.value, expr: e(d.expr) }
-      }
-    }
-
-    else if (node.is('fn_assign')) {
-      t = {
-        tmpl: '#{let}#{id} = #{fn}',
-        dat: { let: node._let ? 'var ' : '', id: d.id.value, fn: f(d.args, d.body, true) }
-      }
-    }
-  }
-  return t
-}
-
-// generate function definition
-f = (args, body, semi) => {
-  args = e(args, ', ')
-  return _.template('function (#{args}) #{body}')({ args, body: b(body, semi, args) })
-}
-
-// generate function call
-c = (node, semi = false) => {
-  let t = {}
-  if (node) {
-    let d = node.data || {}
-    t = {
-      tmpl: '#{field}#{public}#{fn}(#{args})#{semi}',
-      dat: { field: node._field ? '.' : '', public: node.token._publics ? '_vm.publics.' : '', fn: node.value, args: e(d.args, ', '), semi: semi ? ';' : '' }
-    }
-  }
-  return t
-}
-
-// generate statement line(s)
-s = node => {
-  let str = ''
-
-  if (_.isArray(node)) {
-    for (let n of node) {
-      str += s(n)
-    }
-  }
-  else if (node) {
-    let d = node.data || {}
-    let t = {}
-
-    if (node.is(['assign', 'fn_assign'])) {
-      t = a(node)
-    }
-    else if (node.is('fn')) {
-      t = c(node, true)
-    }
-    else if (node.is('if')) {
-      t = {
-        tmpl: 'if (#{expr}) #{true_body}#{false_body}',
-        dat: { expr: e(d.expr), true_body: b(d.true_body, false, ''), false_body: s(d.false_body) }
-      }
-    }
-    else if (node.is('else')) {
-      if (d.expr) { // else if
-        t = {
-          tmpl: 'else if (#{expr}) #{true_body}#{false_body}',
-          dat: { expr: e(d.expr), true_body: b(d.true_body, false, ''), false_body: s(d.false_body) }
-        }
-      }
-      else {
-        t = {
-          tmpl: 'else #{false_body}',
-          dat: { false_body: b(d.false_body, false, '') }
-        }
-      }
-    }
-    else if (node.is('while')) {
-      t = {
-        tmpl: 'while (#{expr}) #{body}',
-        dat: { expr: e(d.expr), body: b(d.body, false, '') }
-      }
-    }
-    else if (node.is('for')) {
-      t = {
-        tmpl: 'for (var #{v} = #{min_expr}; #{v} < #{max_expr}; #{v} += #{step_expr}) #{body}',
-        dat: { v: d.v.value, min_expr: e(d.min_expr), max_expr: e(d.max_expr), step_expr: d.step_expr ? e(d.step_expr) : '1', body: b(d.body, false) }
-      }
-    }
-    else if (node.is('return')) {
-      t = {
-        tmpl: 'return #{args};',
-        dat: { args: e(d.args, ', ') }
-      }
-    }
-    else if (node.is(['break', 'continue'])) {
-      t = {
-        tmpl: '#{word};',
-        dat: { word: node.token.value }
-      }
-    }
-
-    str = _.template(t.tmpl)(t.dat)
-  }
-
-  return l(i(str))
-}
-
-// generate indented block of statement(s)
-b = (node, semi = false) => {
-  let str = l('{')
-
-  indent++
-
-  if (_.isArray(node)) {
-    for (let n of node) {
-      str += s(n)
-    }
-  }
-  else {
-    str = s(node)
-  }
-
-  indent--
-
-  str += l(i('}' + (semi ? ';' : '')))
-
-  return str
-}
-
-// generate expression(s)
-e = (node, separator) => {
-  let str = ''
-
-  if (_.isArray(node)) {
-    let a = []
-    for (let n of node) {
-      a.push(e(n))
-    }
-    str = a.join(separator || '')
-  }
-  else {
-    let d = node && node.data || {}
-    let t = { tmpl: '', dat: {} }
-
-    if (node) {
-      if (_.isString(node)) {
-        t = {
-          tmpl: '#{node}',
-          dat: { node }
-        }
-      }
-      else if (node.is('fn')) {
-        t = c(node)
-      }
-      else if (node.is('fn_assign')) {
-        t = {
-          tmpl: '#{fn}',
-          dat: { fn: f(d.args, d.body, false) }
-        }
-      }
-      else if (node.is('open_bracket')) {
-        t = {
-          tmpl: '[#{args}]#{fields}',
-          dat: { args: e(d.args, ', '), fields: d.fields ? e(d.fields, '') : '' }
-        }
-      }
-      else if (node.is('open_curly')) {
-        let def = _.map(d.def, f => _.template('#{value}: #{expr}')({ value: f.value, expr: e(f.data.expr) }))
-        t = {
-          tmpl: '{#{def}}#{fields}',
-          dat: { def: e(def, ', '), fields: d.fields ? e(d.fields, '') : '' }
-        }
-      }
-      else if (node.is(['math', 'logic', 'comp'])) {
-        t = {
-          tmpl: '#{left} #{op} #{right}',
-          dat: { op: node.value, left: e(d.left), right: e(d.right) }
-        }
-      }
-      else if (node.is(['char', 'string'])) {
-        t = {
-          tmpl: '#{value}',
-          dat: { value: string(node.value) }
-        }
-      }
-      else if (node.is('id')) {
-        t = {
-          tmpl: '#{field}#{value}#{fields}',
-          dat: { field: node._field ? '.' : '', value: node.value, fields: d.fields ? e(d.fields, '') : '' }
-        }
-      }
-      else {
-        t = {
-          tmpl: '#{value}',
-          dat: { value: node.value }
-        }
-      }
-    }
-    else {
-      t = {
-        tmpl: 'undefined',
-        dat: {}
-      }
-    }
-
-    str = _.template(t.tmpl)(t.dat)
-  }
-
-  return str
-}
 
 Transpiler = class {
 
@@ -286,7 +37,7 @@ Transpiler = class {
     this.line = ''
     this.offset = 0
     this.code = ''
-    indent = 0
+    this.indent_level = 0
   }
 
   code_start () {
@@ -297,11 +48,308 @@ Transpiler = class {
     this.writeln()
   }
 
+  str (value) { return '\'' + value.replace(/'/g, '\'') + '\'' }
+
+  comma (nodes) {
+    let a = []
+    for (let n of nodes) {
+      a.push(n instanceof Node ? this.expr(n) : n)
+    }
+    return a.join(', ')
+  }
+
+  ln (str) { return str + (!_.endsWith(str, '\n') ? '\n' : '') }
+
+  indent (str) { return _.padStart('', this.indent_level * 2) + str }
+
+  assign (node) {
+    let t = {}
+    if (node) {
+      let d = node.data || {}
+
+      let id = this.expr(d.id)
+      let _let = node._let ? 'let ' : ''
+      let expr
+      let op
+
+      if (node.is('assign')) {
+        op = ' ' + node.value + ' '
+        expr = this.expr(d.expr)
+      }
+      else if (node.is('fn_assign')) {
+        op = !node._in_class || node._fn_level > 0 ? ' = ' : ' '
+        expr = this.fn_def(d.args, d.body, node._in_class && node._fn_level === 0)
+      }
+
+      t = {
+        tmpl: '#{_let}#{id}#{op}#{expr}',
+        dat: { _let, id, op, expr }
+      }
+    }
+    return t
+  }
+
+  fn_def (args, body, in_class) {
+    return _.template('#{fn}(#{args}) #{body}')({
+      fn: !in_class ? 'function ' : '',
+      args: this.expr(args, ', '),
+      body: this.block(body),
+    })
+  }
+
+  fn_call (node) {
+    let t = {}
+    if (node) {
+      let d = node.data || {}
+      t = {
+        tmpl: '#{field}#{public}#{fn}(#{args})',
+        dat: {
+          field: node._field ? '.' : '',
+          public: node._publics ? '_vm.publics.' : '',
+          fn: node.value,
+          args: this.expr(d.args, ', '),
+        }
+      }
+    }
+    return t
+  }
+
+  statement (node) {
+    let str = ''
+
+    if (_.isArray(node)) {
+      for (let n of node) {
+        str += this.statement(n)
+      }
+    }
+    else if (node) {
+      let d = node.data || {}
+      let t = {}
+
+      if (node.is(['assign', 'fn_assign'])) {
+        t = this.assign(node)
+      }
+      else if (node.is('fn')) {
+        t = this.fn_call(node, true)
+      }
+      else if (node.is('if')) {
+        t = {
+          tmpl: 'if (#{expr}) #{true_body}#{false_body}',
+          dat: {
+            expr: this.expr(d.expr),
+            true_body: this.block(d.true_body),
+            false_body: this.statement(d.false_body),
+          }
+        }
+      }
+      else if (node.is('else')) {
+        if (d.expr) { // else if
+          t = {
+            tmpl: 'else if (#{expr}) #{true_body}#{false_body}',
+            dat: {
+              expr: this.expr(d.expr),
+              true_body: this.block(d.true_body),
+              false_body: this.statement(d.false_body),
+            }
+          }
+        }
+        else {
+          t = {
+            tmpl: 'else #{false_body}',
+            dat: { false_body: this.block(d.false_body) }
+          }
+        }
+      }
+      else if (node.is('while')) {
+        t = {
+          tmpl: 'while (#{expr}) #{body}',
+          dat: {
+            expr: this.expr(d.expr),
+            body: this.block(d.body),
+          }
+        }
+      }
+      else if (node.is('for')) {
+        t = {
+          tmpl: 'for (let #{v} = #{min_expr}; #{v} < #{max_expr}; #{v} += #{step_expr}) #{body}',
+          dat: {
+            v: d.v.value,
+            min_expr: this.expr(d.min_expr),
+            max_expr: this.expr(d.max_expr),
+            step_expr: d.step_expr ? this.expr(d.step_expr) : '1',
+            body: this.block(d.body),
+          }
+        }
+      }
+      else if (node.is('return')) {
+        t = {
+          tmpl: 'return #{args}',
+          dat: { args: this.expr(d.args, ', ') }
+        }
+      }
+      else if (node.is(['break', 'continue'])) {
+        t = {
+          tmpl: '#{word}',
+          dat: { word: node.value }
+        }
+      }
+      else if (node.is('class')) {
+        t = {
+          tmpl: 'class #{name}#{_extends} #{body}',
+          dat: {
+            name: d.id.value,
+            _extends: d._extends ? ' extends ' + this.expr(d._extends, ', ') : '',
+            body: this.block(d.body),
+          }
+        }
+      }
+
+      str = _.template(t.tmpl)(t.dat)
+    }
+
+    return this.ln(this.indent(str))
+  }
+
+  block (node) {
+    let str = this.ln('{')
+
+    this.indent_level++
+
+    if (_.isArray(node)) {
+      for (let n of node) {
+        str += this.statement(n)
+      }
+    }
+    else {
+      str = this.statement(node)
+    }
+
+    this.indent_level--
+
+    str += this.ln(this.indent('}'))
+
+    return str
+  }
+
+  expr (node, separator) {
+    let str = ''
+
+    if (_.isArray(node)) {
+      let a = []
+      for (let n of node) {
+        a.push(this.expr(n))
+      }
+      str = a.join(separator || '')
+    }
+    else {
+      let d = node && node.data || {}
+      let t = { tmpl: '', dat: {} }
+
+      if (node) {
+        if (_.isString(node)) {
+          t = {
+            tmpl: '#{node}',
+            dat: { node }
+          }
+        }
+        else if (node.is('fn')) {
+          t = this.fn_call(node)
+        }
+        else if (node.is('fn_assign')) {
+          t = {
+            tmpl: '#{fn}',
+            dat: { fn: this.fn_def(d.args, d.body) }
+          }
+        }
+        else if (node.is('open_bracket')) {
+          t = {
+            tmpl: '[#{args}]#{fields}',
+            dat: {
+              args: this.expr(d.args, ', '),
+              fields: d.fields ? this.expr(d.fields, '') : '',
+            }
+          }
+        }
+        else if (node.is('open_curly')) {
+          let def = _.map(d.def, f => _.template('#{value}: #{expr}')({ value: f.value, expr: this.expr(f.data.expr) }))
+          t = {
+            tmpl: '{#{def}}#{fields}',
+            dat: {
+              def: this.expr(def, ', '),
+              fields: d.fields ? this.expr(d.fields, '') : ''
+            }
+          }
+        }
+        else if (node.is(['math', 'logic', 'comp'])) {
+          t = {
+            tmpl: '#{left} #{op} #{right}',
+            dat: {
+              op: node.value,
+              left: this.expr(d.left),
+              right: this.expr(d.right),
+            }
+          }
+        }
+        else if (node.is(['this', 'this_field'])) {
+          t = {
+            tmpl: 'this#{dot}#{field}#{fields}',
+            dat: {
+              dot: node.is('this_field') ? '.' : '',
+              field: node.is('this_field') ? node.value : '',
+              fields: d.fields ? this.expr(d.fields, '') : '',
+            }
+          }
+        }
+        else if (node.is(['char', 'string'])) {
+          t = {
+            tmpl: '#{value}',
+            dat: { value: this.str(node.value) }
+          }
+        }
+        else if (node.is('new')) {
+          t = {
+            tmpl: 'new #{id}(#{args})',
+            dat: {
+              id: d.id.value,
+              args: this.expr(d.args, ', '),
+            }
+          }
+        }
+        else if (node.is('id')) {
+          t = {
+            tmpl: '#{field}#{value}#{fields}',
+            dat: {
+              field: node._field ? '.' : '',
+              value: node.value,
+              fields: d.fields ? this.expr(d.fields, '') : '',
+            }
+          }
+        }
+        else {
+          t = {
+            tmpl: '#{value}',
+            dat: { value: node.value }
+          }
+        }
+      }
+      else {
+        t = {
+          tmpl: 'undefined',
+          dat: {}
+        }
+      }
+
+      str = _.template(t.tmpl)(t.dat)
+    }
+
+    return str
+  }
+
   run (nodes) {
     this.reset(nodes)
     this.code_start()
     while (!this.eos) {
-      this.writeln(s(this.node))
+      this.writeln(this.statement(this.node))
       this.next()
     }
     this.code_end()

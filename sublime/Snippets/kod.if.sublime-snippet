@@ -6,6 +6,6 @@ end
 
 ]]></content>
     <tabTrigger>if</tabTrigger>
-    <scope>source.assembly.dx32</scope>
-    <description>DX32 if block</description>
+    <scope>source.kod</scope>
+    <description>kod if block</description>
 </snippet>

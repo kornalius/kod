@@ -1,0 +1,11 @@
+<snippet>
+	<content><![CDATA[
+for :${1:i} = ${2:0} to ${3:10}
+	$SELECTION
+end
+
+]]></content>
+    <tabTrigger>for</tabTrigger>
+    <scope>source.kod</scope>
+    <description>kod for loop</description>
+</snippet>
