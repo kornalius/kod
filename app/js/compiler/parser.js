@@ -148,7 +148,7 @@ Parser = class {
     else if (this.is('for')) { return this.for_statement() } // while block
     else if (this.is('while')) { return this.while_statement() } // while block
     else if (this.is('return')) { return this.return_statement() } // return from function
-    else if (this.is(['break', 'continue'])) { return this.single_statement() } // single statement
+    else if (this.is(['break', 'continue'])) { return this.single() } // single statement
     else if (this.is('class')) { return this.class_statement() } // class statement
     else if (this.is('id')) { return this.id_statement() } // function call
     else {
@@ -261,7 +261,7 @@ Parser = class {
     return new Node(this, token, { expr: expr_block, body })
   }
 
-  class_list () { return this.loop_while(this.arg_def, ['id'], 'eol', true, 'comma') }
+  class_list () { return this.loop_while(this.single, ['id'], 'eol', true, 'comma') }
 
   class_statement () {
     let token = this.token
@@ -270,6 +270,7 @@ Parser = class {
     let id = this.token
     this.next()
     if (this.is(':')) {
+      this.next()
       _extends = this.class_list()
     }
     this.in_class = true
@@ -355,7 +356,7 @@ Parser = class {
     return node
   }
 
-  single_statement () {
+  single () {
     let node = new Node(this, this.token)
     this.next()
     return node
@@ -385,7 +386,7 @@ Parser = class {
     if (this.is('open_paren')) {
       this.next()
       if (!this.is('close_paren')) {
-        args = this.exprs()
+        args = this.exprs('close_paren', false)
       }
       this.expect('close_paren')
     }
@@ -421,13 +422,7 @@ Parser = class {
     return node
   }
 
-  arg_def () {
-    let node = new Node(this, this.token)
-    this.next()
-    return node
-  }
-
-  fn_args_def () { return this.loop_while(this.arg_def, ['id'], 'close_paren', false, 'comma') }
+  fn_args_def () { return this.loop_while(this.single, ['id'], 'close_paren', false, 'comma') }
 
   id_field_literal () {
     let node = new Node(this, this.token)

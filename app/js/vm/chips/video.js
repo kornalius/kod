@@ -1,8 +1,5 @@
 import { Chip } from '../chip.js'
-
-PIXI.Point.prototype.distance = target => {
-  Math.sqrt((this.x - target.x) * (this.x - target.x) + (this.y - target.y) * (this.y - target.y))
-}
+import { Monitor } from '../ui/monitor/monitor.js'
 
 export var VideoChip
 
@@ -17,21 +14,18 @@ VideoChip = class extends Chip {
     this.scale = scale || 3
     this.offset_x = offset ? offset.x : 0
     this.offset_y = offset ? offset.y : 0
-    this.margins_x = margins ? margins.x : 32
-    this.margins_y = margins ? margins.y : 32
+    this.margins_x = margins ? margins.x : 24
+    this.margins_y = margins ? margins.y : 24
 
     this.force_update = false
     this.force_flip = false
 
-    this.pixels = new Uint8Array(this.size)
-
-    this.monitor_init()
-    this.monitor_resize()
+    this.data = new Uint8Array(this.size)
 
     this.clear()
 
     this.publicize([
-      { name: 'pixels' },
+      { name: 'pixels', value: 'data', readonly: true },
       { name: 'clear' },
       { name: 'flip' },
       { name: 'refresh' },
@@ -46,40 +40,38 @@ VideoChip = class extends Chip {
     super.boot(cold)
 
     if (cold) {
-      this.reset()
+      if (!this.monitor) {
+        this.monitor = new Monitor(this, this.vm.chips.palette, this.vm.chips.text, this.vm.chips.sprite)
+      }
+      this.monitor.resize()
       this.test()
     }
   }
 
   tick (t, delta) {
-    this.monitor_tick(t, delta)
+    this.monitor.tick(t, delta)
 
     if (this.force_update) {
       this.force_update = false
       if (this.force_flip) {
         this.flip()
       }
-      this.renderer.render(this.stage)
+      this.monitor.renderer.render(this.monitor.stage)
     }
 
     super.tick(t, delta)
   }
 
   reset () {
-    this.monitor_reset()
+    this.force_update = false
+    this.force_flip = false
     this.clear()
+    this.monitor.reset()
     super.reset()
   }
 
   shut () {
-    this.monitor_shut()
-
-    this.stage.destroy()
-    this.stage = null
-
-    this.renderer.destroy()
-    this.renderer = null
-
+    this.monitor.shut()
     super.shut()
   }
 
@@ -91,31 +83,33 @@ VideoChip = class extends Chip {
   }
 
   clear () {
-    this.pixels.fill(0)
+    this.data.fill(0)
     this.refresh()
   }
 
   flip () {
-    let screenOverlay = this.overlays.screen
-    let data = screenOverlay.context.getImageData(0, 0, screenOverlay.width, screenOverlay.height)
-    let pixels = new Uint32Array(data.data.buffer)
+    let screen = this.monitor.overlays.screen
+    let image_data = screen.context.getImageData(0, 0, screen.width, screen.height)
+    let pixels = new Uint32Array(image_data.data.buffer)
 
-    let mem = this.pixels
+    let data = this.data
+    let pal = this.vm.chips.palette
+
     for (let i = 0; i < this.size; i++) {
-      pixels[i] = this.palette_rgba(mem[i])
+      pixels[i] = pal.to_rgba(data[i])
     }
 
-    screenOverlay.context.putImageData(data, 0, 0)
+    screen.context.putImageData(image_data, 0, 0)
 
     this.force_flip = false
   }
 
   pixel (i, c) {
-    let mem = this.pixels
-    if (c !== undefined && mem[i] !== c) {
-      mem[i] = c
+    let data = this.data
+    if (c !== undefined && data[i] !== c) {
+      data[i] = c
     }
-    return mem[i]
+    return data[i]
   }
 
   pix_idx (x, y) { return y * this.width + x }
@@ -130,12 +124,12 @@ VideoChip = class extends Chip {
     let lw = y * this.width
     let s = lw
     let e = this.size - lw
-    this.pixels.copy(s, 0, e - s)
+    this.data.copy(s, 0, e - s)
     this.refresh()
   }
 
   test () {
-    this.mem.fill(10, this.top, 2000)
+    this.data.fill(10, 0, 2000)
 
     this.pixel(200, 0)
     this.pixel(400, 6)
@@ -143,27 +137,6 @@ VideoChip = class extends Chip {
     this.pixel(600, 20)
 
     this.refresh()
-
-    this.to(1, 1)
-    this.put('A', 29, 15)
-
-    this.to(10, 11)
-    this.print('Welcome to DX32\nÉgalitée!', 2, 6)
-
-    let chars = ''
-    for (let i = 33; i < 256; i++) {
-      chars += String.fromCharCode(i)
-    }
-    this.to(1, 2)
-    this.print(chars, 25, 0)
-
-    this.to(1, 23)
-    this.print('Second to last line', 1, 0)
-
-    this.to(1, 24)
-    this.print('012345678901234567890123456789012345678901234567890123', 21, 0)
-
-    this.txt_refresh()
   }
 
 }

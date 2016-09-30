@@ -9,7 +9,7 @@ uuid: c99f17c6-9642-4847-b3ec-16e0580ebe16
 patterns:
 
   - name: keyword.control
-    match: (if|else|for|to|end|while|break|continue|return|let|class|new)\b
+    match: (if|else|for|to|end|while|break|continue|return|let|class|new|super)\b
 
   - name: constant.language
     match: \b(true|false|null|nil)\b

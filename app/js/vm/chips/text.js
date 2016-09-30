@@ -1,4 +1,7 @@
+import { fs, path } from '../../utils.js'
+import { Chip } from '../chip.js'
 
+export var TextChip
 
 class BDF {
 
@@ -118,9 +121,16 @@ class BDF {
 }
 
 
-export class Text {
+TextChip = class extends Chip {
 
-  txt_init (char_count, char_width, char_height, char_offset) {
+  constructor (vm, offset, char_count, char_width, char_height, char_offset) {
+    super(vm)
+
+    this.video = this.vm.chips.video
+
+    this.offset_x = offset ? offset.x : 0
+    this.offset_y = offset ? offset.y : 0
+
     this.chr_count = char_count || 256
     this.chr_width = char_width || 6
     this.chr_height = char_height || 10
@@ -128,14 +138,13 @@ export class Text {
     this.chr_offset_y = char_offset ? char_offset.y : 4
     this.chr_size = this.chr_width * this.chr_height
 
-    this.txt_width = Math.round(this.vid_width / this.chr_width)
-    this.txt_height = Math.round(this.vid_height / this.chr_height)
-    this.txt_size = this.txt_width * this.txt_height * 3
+    this.width = Math.round(this.video.width / this.chr_width)
+    this.height = Math.round(this.video.height / this.chr_height)
+    this.size = this.width * this.height * 3
+    this.data = new Uint8Array(this.size)
 
     this.fnt_size = this.chr_count * this.chr_size
-
     this.fnt_data = new Uint8Array(this.fnt_size)
-    this.txt_data = new Uint8Array(this.txt_size)
 
     this.publicize([
       { name: 'chr_count' },
@@ -144,113 +153,128 @@ export class Text {
       { name: 'chr_offset_x' },
       { name: 'chr_offset_y' },
       { name: 'chr_size' },
-      { name: 'txt_width' },
-      { name: 'txt_height' },
-      { name: 'txt_size' },
+
+      { name: 'txt_width', value: 'width', readonly: true },
+      { name: 'txt_height', value: 'height', readonly: true },
+      { name: 'txt_size', value: 'size', readonly: true },
       { name: 'fnt_size' },
       { name: 'fnt_data' },
-      { name: 'txt_data' },
+      { name: 'txt_data', value: 'data', readonly: true },
 
-      { name: 'draw', value: 'txt_draw' },
-      { name: 'txt_refresh', value: 'txt_refresh' },
-      { name: 'idx', value: 'txt_index' },
-      { name: 'lin', value: 'txt_line' },
-      { name: 'at', value: 'txt_char_at' },
-      { name: 'put', value: 'txt_put_char' },
-      { name: 'print', value: 'txt_print' },
-      { name: 'pos', value: 'txt_pos' },
-      { name: 'to', value: 'txt_move_to' },
-      { name: 'by', value: 'txt_move_by' },
-      { name: 'bol', value: 'txt_bol' },
-      { name: 'eol', value: 'txt_eol' },
-      { name: 'bos', value: 'txt_bos' },
-      { name: 'eos', value: 'txt_eos' },
-      { name: 'bs', value: 'txt_bs' },
-      { name: 'cr', value: 'txt_cr' },
-      { name: 'lf', value: 'txt_lf' },
-      { name: 'up', value: 'txt_up' },
-      { name: 'left', value: 'txt_left' },
-      { name: 'down', value: 'txt_down' },
-      { name: 'right', value: 'txt_right' },
-      { name: 'clr', value: 'txt_clear' },
-      { name: 'clr_eol', value: 'txt_clear_eol' },
-      { name: 'clr_os', value: 'txt_clear_eos' },
-      { name: 'clr_bl', value: 'txt_clear_bol' },
-      { name: 'clr_bs', value: 'txt_clear_bos' },
-      { name: 'cpy_lin', value: 'txt_copy_lin' },
-      { name: 'cpy_col', value: 'txt_copy_col' },
-      { name: 'erase_lin', value: 'txt_erase_lin' },
-      { name: 'erase_col', value: 'txt_erase_col' },
-      { name: 'scroll', value: 'txt_scroll' },
+      { name: 'txt_flip', value: 'flip' },
+      { name: 'txt_refresh', value: 'refresh' },
+      { name: 'txt_scroll', value: 'scroll' },
+      { name: 'idx', value: 'index' },
+      { name: 'lin', value: 'line' },
+      { name: 'at', value: 'char_at' },
+      { name: 'put' },
+      { name: 'print' },
+      { name: 'pos' },
+      { name: 'move_to' },
+      { name: 'move_by' },
+      { name: 'bol' },
+      { name: 'eol' },
+      { name: 'bos' },
+      { name: 'eos' },
+      { name: 'bs' },
+      { name: 'cr' },
+      { name: 'lf' },
+      { name: 'up' },
+      { name: 'left' },
+      { name: 'down' },
+      { name: 'right' },
+      { name: 'clr', value: 'clear' },
+      { name: 'clr_eol', value: 'clear_eol' },
+      { name: 'clr_os', value: 'clear_eos' },
+      { name: 'clr_bl', value: 'clear_bol' },
+      { name: 'clr_bs', value: 'clear_bos' },
+      { name: 'cpy_lin', value: 'copy_line' },
+      { name: 'cpy_col', value: 'copy_col' },
+      { name: 'erase_lin', value: 'erase_line' },
+      { name: 'erase_col', value: 'erase_col' },
     ])
   }
 
-  txt_tick (t, delta) {
-    if (this.txt_force_update) {
-      this.txt_draw()
-      this.txt_force_update = false
+  boot (cold) {
+    if (cold) {
+      this.textCursor = this.video.monitor.overlays.textCursor
+      this.load_fnt()
+    }
+    super.boot(cold)
+  }
+
+  tick (t, delta) {
+    super.tick(t, delta)
+    if (this.force_update) {
+      this.flip()
+      this.video.force_update = true
+      this.video.force_flip = true
+      this.force_update = false
     }
   }
 
-  txt_reset () {
-    this.txt_force_update = false
-    this.txt_clear()
+  reset () {
+    this.force_update = false
+    this.clear()
+    super.reset()
   }
 
-  txt_shut () {
-  }
-
-  txt_load_fnt () {
+  load_fnt () {
     let b = new BDF()
-    let ff = require('raw!../../../fonts/ctrld-fixed-10r.bdf')
-    b.load(ff)
+    fs.readFile(path.join(__dirname, '../app/assets/fonts/ctrld-fixed-10r.bdf'), 'utf8', (err, data) => {
+      if (!err) {
+        b.load(data)
+        // let points = b.meta.size.points
+        let fontAscent = b.meta.properties.fontAscent
+        // let fontDescent = b.meta.properties.fontDescent
+        let baseline = fontAscent + this.chr_offset_y
 
-    // let points = b.meta.size.points
-    let fontAscent = b.meta.properties.fontAscent
-    // let fontDescent = b.meta.properties.fontDescent
-    let baseline = fontAscent + this.chr_offset_y
+        let cw = this.chr_width
+        let fnt_sz = this.chr_size
+        let osx = this.chr_offset_x
 
-    let cw = this.chr_width
-    let fnt_sz = this.chr_size
-    let osx = this.chr_offset_x
+        var fnt_data = this.fnt_data
 
-    var mem = this.fnt_data
+        for (let k in b.glyphs) {
+          let g = b.glyphs[k]
+          let bb = g.boundingBox
+          let dsc = baseline - bb.height - bb.y
+          let ptr = g.code * fnt_sz
 
-    for (let k in b.glyphs) {
-      let g = b.glyphs[k]
-      let bb = g.boundingBox
-      let dsc = baseline - bb.height - bb.y
-      let ptr = g.code * fnt_sz
-
-      for (let y = 0; y < bb.height; y++) {
-        let p = ptr + (y + dsc) * cw
-        for (let x = 0; x < bb.width; x++) {
-          mem[p + x + bb.x + osx] |= g.bitmap[y][x]
+          for (let y = 0; y < bb.height; y++) {
+            let p = ptr + (y + dsc) * cw
+            for (let x = 0; x < bb.width; x++) {
+              fnt_data[p + x + bb.x + osx] |= g.bitmap[y][x]
+            }
+          }
         }
-      }
-    }
 
+        this.test()
+      }
+    })
     return b
   }
 
-  txt_draw () {
+  flip () {
     let cw = this.chr_width
     let ch = this.chr_height
-    let tw = this.txt_width
-    let th = this.txt_height
-    let w = this.vid_width
+    let tw = this.width
+    let th = this.height
+    let w = this.video.width
     let fnt_sz = this.chr_size
 
-    var fnt_mem = this.fnt_data
-    var txt_mem = this.txt_data
+    let fnt_data = this.fnt_data
+    let data = this.data
+
+    let pixels = this.video.data
 
     let idx = 0
     for (let y = 0; y < th; y++) {
       for (let x = 0; x < tw; x++) {
-        let c = txt_mem[idx]
+        let c = data[idx]
         if (c) {
-          let fg = txt_mem[idx + 1]
-          let bg = txt_mem[idx + 2]
+          let fg = data[idx + 1]
+          let bg = data[idx + 2]
 
           let px = x * cw
           let py = y * ch
@@ -259,7 +283,7 @@ export class Text {
           for (let by = 0; by < ch; by++) {
             let pi = (py + by) * w + px
             for (let bx = 0; bx < cw; bx++) {
-              this.pixel(pi++, fnt_mem[ptr++] ? fg : bg)
+              pixels[pi++] = fnt_data[ptr++] ? fg : bg
             }
           }
         }
@@ -268,183 +292,205 @@ export class Text {
     }
   }
 
-  txt_refresh (flip = true) {
-    this.vid_refresh(flip)
-    this.txt_force_update = true
+  refresh (flip = true) {
+    this.force_update = true
   }
 
-  txt_index (x, y) {
-    return ((y - 1) * this.txt_width + (x - 1)) * 3
+  index (x, y) {
+    return ((y - 1) * this.width + (x - 1)) * 3
   }
 
-  txt_line (y) {
-    let l = this.txt_width * 3
+  line (y) {
+    let l = this.width * 3
     return { start: y * l, end: (y + 1) * l - 3, length: l }
   }
 
-  txt_char_at (x, y) {
-    let tidx = this.txt_index(x, y)
-    let mem = this.txt_data
-    return { ch: mem[tidx], fg: mem[tidx + 1], bg: mem[tidx + 2] }
+  char_at (x, y) {
+    let tidx = this.index(x, y)
+    let data = this.data
+    return { ch: data[tidx], fg: data[tidx + 1], bg: data[tidx + 2] }
   }
 
-  txt_put_char (ch, fg = 1, bg = 0) {
+  put (ch, fg = 1, bg = 0) {
     switch (ch.charCodeAt(0)) {
       case 13:
       case 10:
-        this.txt_cr()
+        this.cr()
         return
       case 8:
-        this.txt_bs()
+        this.bs()
         return
     }
 
-    let { x, y } = this.txt_pos()
-    this.txt_data.set([ch.charCodeAt(0), fg, bg], this.txt_index(x, y))
+    let { x, y } = this.pos()
+    this.data.set([ch.charCodeAt(0), fg, bg], this.index(x, y))
 
-    this.overlays.textCursor.x++
-    if (this.overlays.textCursor.x > this.txt_width) {
-      this.txt_cr()
+    this.textCursor.x++
+    if (this.textCursor.x > this.width) {
+      this.cr()
     }
 
-    this.txt_refresh()
+    this.refresh()
   }
 
-  txt_print (text, fg, bg) {
+  print (text, fg, bg) {
     for (let c of text) {
-      this.txt_put_char(c, fg, bg)
+      this.put(c, fg, bg)
     }
     return this
   }
 
-  txt_pos () { return { x: this.overlays.textCursor.x, y: this.overlays.textCursor.y } }
+  pos () { return { x: this.textCursor.x, y: this.textCursor.y } }
 
-  txt_move_to (x, y) {
-    if (x > this.txt_width) {
-      x = this.txt_width
+  move_to (x, y) {
+    if (x > this.width) {
+      x = this.width
     }
     else if (x < 1) {
       x = 1
     }
-    if (y > this.txt_height) {
-      y = this.txt_height
+    if (y > this.height) {
+      y = this.height
     }
     else if (y < 1) {
       y = 1
     }
 
-    this.overlays.textCursor.x = x
-    this.overlays.textCursor.y = y
+    this.textCursor.x = x
+    this.textCursor.y = y
 
-    this.txt_refresh(false)
+    this.refresh(false)
   }
 
-  txt_move_by (x, y) { return this.txt_move_to(this.overlays.textCursor.x + x, this.overlays.textCursor.y + y) }
+  move_by (x, y) { return this.move_to(this.textCursor.x + x, this.textCursor.y + y) }
 
-  txt_bol () { return this.txt_move_to(1, this.overlays.textCursor.y) }
+  bol () { return this.move_to(1, this.textCursor.y) }
 
-  txt_eol () { return this.txt_move_to(this.txt_width, this.overlays.textCursor.y) }
+  eol () { return this.move_to(this.width, this.textCursor.y) }
 
-  txt_bos () { return this.txt_move_to(1, 1) }
+  bos () { return this.move_to(1, 1) }
 
-  txt_eos () { return this.txt_move_to(this.txt_width, this.txt_height) }
+  eos () { return this.move_to(this.width, this.height) }
 
-  txt_bs () { this.txt_left(); this.txt_put_char(' '); return this.txt_left() }
+  bs () { this.left(); this.put(' '); return this.left() }
 
-  txt_cr () { return this.txt_move_to(1, this.overlays.textCursor.y + 1) }
+  cr () { return this.move_to(1, this.textCursor.y + 1) }
 
-  txt_lf () { return this.txt_move_to(this.overlays.textCursor.x, this.overlays.textCursor.y + 1) }
+  lf () { return this.move_to(this.textCursor.x, this.textCursor.y + 1) }
 
-  txt_up () { return this.txt_move_to(this.overlays.textCursor.x, this.overlays.textCursor.y - 1) }
+  up () { return this.move_to(this.textCursor.x, this.textCursor.y - 1) }
 
-  txt_left () { return this.txt_move_to(this.overlays.textCursor.x - 1, this.overlays.textCursor.y) }
+  left () { return this.move_to(this.textCursor.x - 1, this.textCursor.y) }
 
-  txt_down () { return this.txt_move_to(this.overlays.textCursor.x, this.overlays.textCursor.y + 1) }
+  down () { return this.move_to(this.textCursor.x, this.textCursor.y + 1) }
 
-  txt_right () { return this.txt_move_to(this.overlays.textCursor.x + 1, this.overlays.textCursor.y) }
+  right () { return this.move_to(this.textCursor.x + 1, this.textCursor.y) }
 
-  txt_clear () {
-    this.txt_data.fill(0)
-    this.txt_refresh()
+  clear () {
+    this.data.fill(0)
+    this.refresh()
   }
 
-  txt_clear_eol () {
-    let { x, y } = this.txt_pos()
-    let s = this.txt_index(x, y)
-    this.txt_data.fill(0, s, this.txt_index(this.txt_width, y) - s)
-    this.txt_refresh()
+  clear_eol () {
+    let { x, y } = this.pos()
+    let s = this.index(x, y)
+    this.data.fill(0, s, this.index(this.width, y) - s)
+    this.refresh()
   }
 
-  txt_clear_eos () {
-    let { x, y } = this.txt_pos()
-    let s = this.txt_index(x, y)
-    this.txt_data.fill(0, s, this.txt_size - s)
-    this.txt_refresh()
+  clear_eos () {
+    let { x, y } = this.pos()
+    let s = this.index(x, y)
+    this.data.fill(0, s, this.size - s)
+    this.refresh()
   }
 
-  txt_clear_bol () {
-    let { x, y } = this.txt_pos()
-    let s = this.txt_index(x, y)
-    this.txt_data.fill(0, s, this.txt_index(1, y) - s)
-    this.txt_refresh()
+  clear_bol () {
+    let { x, y } = this.pos()
+    let s = this.index(x, y)
+    this.data.fill(0, s, this.index(1, y) - s)
+    this.refresh()
   }
 
-  txt_clear_bos () {
-    let { x, y } = this.txt_pos()
-    this.txt_data.fill(0, 0, this.txt_index(x, y) - 1)
-    this.txt_refresh()
+  clear_bos () {
+    let { x, y } = this.pos()
+    this.data.fill(0, 0, this.index(x, y) - 1)
+    this.refresh()
   }
 
-  txt_copy_lin (sy, ty) {
-    let si = this.txt_line(sy)
-    this.txt_data.copy(si.start, this.txt_line(ty), si.length)
-    this.txt_refresh()
+  copy_line (sy, ty) {
+    let si = this.line(sy)
+    this.data.copy(si.start, this.line(ty), si.length)
+    this.refresh()
   }
 
-  txt_copy_col (sx, tx) {
-    let mem = this.txt_data
+  copy_col (sx, tx) {
+    let data = this.data
     sx *= 3
     tx *= 3
-    for (let y = 0; y < this.txt_height; y++) {
-      let i = this.txt_line(y)
-      mem.copy(i.start + sx, i.start + tx, 3)
+    for (let y = 0; y < this.height; y++) {
+      let i = this.line(y)
+      data.copy(i.start + sx, i.start + tx, 3)
     }
-    this.txt_refresh()
+    this.refresh()
   }
 
-  txt_erase_lin (y) {
-    let i = this.txt_line(y)
-    this.txt_data.fill(0, i.start, i.length)
-    this.txt_refresh()
+  erase_line (y) {
+    let i = this.line(y)
+    this.data.fill(0, i.start, i.length)
+    this.refresh()
   }
 
-  txt_erase_col (x) {
-    let mem = this.txt_data
-    let ls = this.txt_line(0).start + x * 3
-    for (let y = 0; y < this.txt_height; y++) {
-      mem.fill(0, ls, 3)
-      ls += this.txt_width * 3
+  erase_col (x) {
+    let data = this.data
+    let ls = this.line(0).start + x * 3
+    for (let y = 0; y < this.height; y++) {
+      data.fill(0, ls, 3)
+      ls += this.width * 3
     }
-    this.txt_refresh()
+    this.refresh()
   }
 
-  txt_scroll (dy) {
+  scroll (dy) {
     if (dy > 0) {
-      let i = this.txt_line(dy + 1)
-      this.txt_data.copy(i.start, 0, this.txt_size)
-      i = this.txt_line(dy)
+      let i = this.line(dy + 1)
+      this.data.copy(i.start, 0, this.size)
+      i = this.line(dy)
       let s = i.start
-      this.txt_data.fill(0, s, this.txt_size - s)
-      this.txt_refresh()
+      this.data.fill(0, s, this.size - s)
+      this.refresh()
     }
     else if (dy < 0) {
-      let i = this.txt_line(dy + 1)
-      this.txt_data.copy(i.start, 0, this.txt_size)
-      i = this.txt_line(dy)
+      let i = this.line(dy + 1)
+      this.data.copy(i.start, 0, this.size)
+      i = this.line(dy)
       let s = i.start
-      this.txt_data.fill(0, s, this.txt_size - s)
-      this.txt_refresh()
+      this.data.fill(0, s, this.size - s)
+      this.refresh()
     }
+  }
+
+  test () {
+    this.move_to(1, 1)
+    this.put('A', 29, 15)
+
+    this.move_to(10, 11)
+    this.print('Welcome to DX32\nÉgalitée!', 2, 6)
+
+    let chars = ''
+    for (let i = 33; i < 256; i++) {
+      chars += String.fromCharCode(i)
+    }
+    this.move_to(1, 2)
+    this.print(chars, 25, 0)
+
+    this.move_to(1, 23)
+    this.print('Second to last line', 1, 0)
+
+    this.move_to(1, 24)
+    this.print('012345678901234567890123456789012345678901234567890123', 21, 0)
+
+    this.refresh()
   }
 
 }

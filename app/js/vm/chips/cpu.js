@@ -8,7 +8,7 @@ CpuChip = class extends Chip {
     super(vm)
 
     this.publicize([
-      { name: 'log', value: (...args) => console.log(...args) },
+      { name: 'puts', value: (...args) => console.log(...args) },
     ])
   }
 

@@ -86,12 +86,13 @@ Lexer = class {
   constructor (vm, path, text) {
     this.vm = vm
 
-    this.publics_regexp = new RegExp('^' + _.keys(this.vm.publics).join('|') + '$', 'i')
-    this.globals_regexp = new RegExp('^' + ['Math'].join('|') + '$', 'i')
+    this.publics_regexp = new RegExp('^(' + _.keys(this.vm.publics).join('|') + ')$', 'i')
+    this.globals_regexp = new RegExp('^(' + ['Math'].join('|') + ')$', 'i')
 
     this.token_types = {
       eol: /^[\r\n]|;/,
       comma: /^,/,
+      colon: /^:(?=[^A-Z_])/i,
 
       comment: /^\/\/([^\r\n]*)/,
 

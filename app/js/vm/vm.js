@@ -13,6 +13,9 @@ import { CpuChip } from './chips/cpu.js'
 import { KeyboardChip } from './chips/keyboard.js'
 import { MouseChip } from './chips/mouse.js'
 import { PaletteChip } from './chips/palette.js'
+import { SpriteChip } from './chips/sprite.js'
+import { TextChip } from './chips/text.js'
+import { VideoChip } from './chips/video.js'
 
 export var VM
 
@@ -25,19 +28,19 @@ VM = class {
   constructor () {
     window._vm = this
 
-    this.PObject = {
-      get: (target, prop) => {
-        let value = target[prop]
-        return !_.isFunction(value) ? () => value : value
-      }
-    }
+    // this.PObject = {
+      // get: (target, prop) => {
+        // let value = target[prop]
+        // return !_.isFunction(value) ? () => value : value
+      // }
+    // }
 
-    this.PArray = {
-      get: (target, prop) => {
-        let value = target[prop]
-        return !_.isFunction(value) || prop === 'length' ? () => value : value
-      }
-    }
+    // this.PArray = {
+      // get: (target, prop) => {
+        // let value = target[prop]
+        // return !_.isFunction(value) || prop === 'length' ? () => value : value
+      // }
+    // }
 
     this.publics = {}
 
@@ -57,12 +60,18 @@ VM = class {
     this.reset()
 
     if (cold) {
-      this.chips = {
-        cpu: new CpuChip(this),
-        keyboard: new KeyboardChip(this),
-        mouse: new MouseChip(this),
-        palette: new PaletteChip(this),
-      }
+      this.chips = {}
+      this.chips.cpu = new CpuChip(this)
+      this.chips.video = new VideoChip(this)
+      this.chips.palette = new PaletteChip(this)
+      this.chips.text = new TextChip(this)
+      this.chips.sprite = new SpriteChip(this)
+      this.chips.keyboard = new KeyboardChip(this)
+      this.chips.mouse = new MouseChip(this)
+    }
+
+    for (let k in this.chips) {
+      this.chips[k].boot(cold)
     }
   }
 

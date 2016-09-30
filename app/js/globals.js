@@ -1,5 +1,9 @@
 import _ from 'lodash'
 
+PIXI.Point.prototype.distance = target => {
+  Math.sqrt((this.x - target.x) * (this.x - target.x) + (this.y - target.y) * (this.y - target.y))
+}
+
 export var error
 export var mixin
 export var delay

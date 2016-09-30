@@ -317,9 +317,10 @@ Transpiler = class {
         }
         else if (node.is('id')) {
           t = {
-            tmpl: '#{field}#{value}#{fields}',
+            tmpl: '#{field}#{public}#{value}#{fields}',
             dat: {
               field: node._field ? '.' : '',
+              public: node._publics ? '_vm.publics.' : '',
               value: node.value,
               fields: d.fields ? this.expr(d.fields, '') : '',
             }

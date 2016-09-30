@@ -1,27 +1,43 @@
+import { path } from '../../../utils.js'
 import _ from 'lodash'
 
+export var Overlay
+export var ScreenOverlay
+export var ScanlinesOverlay
+export var ScanlineOverlay
+export var NoisesOverlay
+export var RgbOverlay
+export var CrtOverlay
+export var TextCursorOverlay
+export var MouseCursorOverlay
+export var Overlays
 
-export class Overlay {
+Overlay = class {
 
-  constructor (video, width, height) {
-    this.video = video
+  constructor (monitor, width, height) {
+    this.monitor = monitor
     this.width = width
     this.height = height
     this.last = 0
   }
 
   create () {
-    this.canvas = new PIXI.CanvasBuffer(this.width, this.height)
+    this.canvas = document.createElement('canvas')
+    this.canvas.width = this.width
+    this.canvas.height = this.height
+    this.canvas.style.display = 'none'
+    document.body.appendChild(this.canvas)
+    // this.canvas = new PIXI.CanvasBuffer(this.width, this.height)
 
-    this.tex = PIXI.Texture.fromCanvas(this.canvas.canvas, PIXI.SCALE_MODES.NEAREST)
-    this.tex.scaleMode = PIXI.SCALE_MODES.NEAREST
+    this.texture = PIXI.Texture.fromCanvas(this.canvas, PIXI.SCALE_MODES.NEAREST)
+    this.texture.scaleMode = PIXI.SCALE_MODES.NEAREST
 
-    this.sprite = new PIXI.Sprite(this.tex)
+    this.sprite = new PIXI.Sprite(this.texture)
 
-    this.context = this.canvas.canvas.getContext('2d', { alpha: true, antialias: false })
+    this.context = this.canvas.getContext('2d', { alpha: true, antialias: false })
   }
 
-  tick (t) {
+  tick (t, delay) {
   }
 
   reset () {
@@ -35,30 +51,30 @@ export class Overlay {
   }
 
   update () {
-    this.video.vid_force_update = true
+    this.monitor.video.refresh(false)
   }
 
 }
 
 
-export class ScreenOverlay extends Overlay {
+ScreenOverlay = class extends Overlay {
 
-  constructor (video, width, height) {
-    super(video, width, height)
+  constructor (monitor, width, height) {
+    super(monitor, width, height)
 
     this.create()
 
-    this.sprite.x = this.video.vid_offset_x + this.video.vid_margins_x / 2
-    this.sprite.y = this.video.vid_offset_y + this.video.vid_margins_y / 2
+    this.sprite.x = this.monitor.video.offset_x + this.monitor.video.margins_x / 2
+    this.sprite.y = this.monitor.video.offset_y + this.monitor.video.margins_y / 2
   }
 
 }
 
 
-export class ScanlinesOverlay extends Overlay {
+ScanlinesOverlay = class extends Overlay {
 
-  constructor (video, width, height, gap, alpha) {
-    super(video, width, height)
+  constructor (monitor, width, height, gap, alpha) {
+    super(monitor, width, height)
 
     this.gap = gap || 3
     this.alpha = alpha || 0.35
@@ -66,8 +82,8 @@ export class ScanlinesOverlay extends Overlay {
     this.create()
 
     let a = this.alpha * 255
-    let data = this.context.getImageData(0, 0, this.width, this.height)
-    let pixels = data.data
+    let image_data = this.context.getImageData(0, 0, this.width, this.height)
+    let pixels = image_data.data
     let sz = this.width * 4
     let idx
     for (let y = 0; y < this.height; y += this.gap) {
@@ -76,16 +92,16 @@ export class ScanlinesOverlay extends Overlay {
         pixels.set([0, 0, 0, a], i)
       }
     }
-    this.context.putImageData(data, 0, 0)
+    this.context.putImageData(image_data, 0, 0)
   }
 
 }
 
 
-export class ScanlineOverlay extends Overlay {
+ScanlineOverlay = class extends Overlay {
 
-  constructor (video, width, height, refresh, alpha, speed) {
-    super(video, width, height)
+  constructor (monitor, width, height, refresh, alpha, speed) {
+    super(monitor, width, height)
 
     this.refresh = refresh || 50
     this.speed = speed || 16
@@ -93,8 +109,8 @@ export class ScanlineOverlay extends Overlay {
 
     this.create()
 
-    let data = this.context.getImageData(0, 0, this.width, this.height)
-    let pixels = data.data
+    let image_data = this.context.getImageData(0, 0, this.width, this.height)
+    let pixels = image_data.data
     let sz = this.width * 4
     let len = this.height * sz
     let l = 0
@@ -108,12 +124,12 @@ export class ScanlineOverlay extends Overlay {
       }
       l++
     }
-    this.context.putImageData(data, 0, 0)
+    this.context.putImageData(image_data, 0, 0)
 
     this.sprite.y = -this.sprite.height
   }
 
-  tick (t) {
+  tick (t, delay) {
     if (t - this.last >= this.refresh) {
       this.sprite.y += this.speed
       if (this.sprite.y > this.height) {
@@ -128,10 +144,10 @@ export class ScanlineOverlay extends Overlay {
 }
 
 
-export class NoisesOverlay extends Overlay {
+NoisesOverlay = class extends Overlay {
 
-  constructor (video, width, height, refresh, count, rate, red, green, blue, alpha) {
-    super(video, width, height)
+  constructor (monitor, width, height, refresh, count, rate, red, green, blue, alpha) {
+    super(monitor, width, height)
 
     this.refresh = refresh || 250
     this.count = count || 8
@@ -145,12 +161,12 @@ export class NoisesOverlay extends Overlay {
 
     let a = this.alpha * 255
     for (let c = 0; c < this.count; c++) {
-      let noise = new Overlay(this.video, this.width, this.height)
+      let noise = new Overlay(this.monitor, this.width, this.height)
       noise.create()
       noise.sprite.visible = c === 0
 
-      let data = noise.context.getImageData(0, 0, this.width, this.height)
-      let pixels = data.data
+      let image_data = noise.context.getImageData(0, 0, this.width, this.height)
+      let pixels = image_data.data
       let len = pixels.length
       let r = this.red
       let g = this.green
@@ -161,9 +177,9 @@ export class NoisesOverlay extends Overlay {
           pixels.set([Math.trunc(Math.random() * r), Math.trunc(Math.random() * g), Math.trunc(Math.random() * b), a], i)
         }
       }
-      noise.context.putImageData(data, 0, 0)
+      noise.context.putImageData(image_data, 0, 0)
       this.noises[c] = noise
-      this.video.stage.addChild(noise.sprite)
+      this.monitor.stage.addChild(noise.sprite)
     }
 
     this.noiseKeys = _.keys(this.noises)
@@ -179,7 +195,7 @@ export class NoisesOverlay extends Overlay {
     this.noiseKeys = []
   }
 
-  tick (t) {
+  tick (t, delay) {
     if (t - this.last >= this.refresh) {
       for (let k of this.noiseKeys) {
         this.noises[k].sprite.visible = false
@@ -195,32 +211,32 @@ export class NoisesOverlay extends Overlay {
 }
 
 
-export class RgbOverlay extends Overlay {
+RgbOverlay = class extends Overlay {
 
-  constructor (video, width, height, alpha) {
-    super(video, width, height)
+  constructor (monitor, width, height, alpha) {
+    super(monitor, width, height)
 
     this.alpha = alpha || 0.075
 
     this.create()
 
-    let data = this.context.getImageData(0, 0, this.width, this.height)
-    let pixels = data.data
+    let image_data = this.context.getImageData(0, 0, this.width, this.height)
+    let pixels = image_data.data
     let len = pixels.length
     let a = this.alpha * 255
     for (let i = 0; i < len; i += 12) {
       pixels.set([100, 100, 100, a], i)
     }
-    this.context.putImageData(data, 0, 0)
+    this.context.putImageData(image_data, 0, 0)
   }
 
 }
 
 
-export class CrtOverlay extends Overlay {
+CrtOverlay = class extends Overlay {
 
-  constructor (video, width, height, radius, inside_alpha, outside_alpha) {
-    super(video, width, height)
+  constructor (monitor, width, height, radius, inside_alpha, outside_alpha) {
+    super(monitor, width, height)
 
     this.radius = radius || 0.25
     this.inside_alpha = inside_alpha || 0.2
@@ -240,10 +256,10 @@ export class CrtOverlay extends Overlay {
 }
 
 
-export class TextCursorOverlay extends Overlay {
+TextCursorOverlay = class extends Overlay {
 
-  constructor (video, width, height, refresh) {
-    super(video, width, height)
+  constructor (monitor, width, height, refresh) {
+    super(monitor, width, height)
 
     this.refresh = refresh || 500
     this.x = 1
@@ -251,39 +267,37 @@ export class TextCursorOverlay extends Overlay {
 
     this.create()
 
-    let data = this.context.getImageData(0, 0, this.width, this.height)
-    let pixels = data.data
+    let image_data = this.context.getImageData(0, 0, this.width, this.height)
+    let pixels = image_data.data
     let len = pixels.length
-    let c = this.video.palette_rgba(1)
+    let c = this.monitor.pal.to_rgba(1)
     for (let i = 0; i < len; i += 4) {
       pixels.set([c >> 24 & 0xFF, c >> 16 & 0xFF, c >> 8 & 0xFF, c & 0xFF], i)
     }
-
-    this.context.putImageData(data, 0, 0)
+    this.context.putImageData(image_data, 0, 0)
   }
 
-  tick (t) {
+  tick (t, delay) {
     if (t - this.last >= this.refresh) {
       this.sprite.visible = !this.sprite.visible
       this.last = t
-
       this.update()
     }
   }
 
   update () {
-    this.sprite.x = (this.x - 1) * this.sprite.width + this.video.vid_offset_x + this.video.txt_offset_x + this.video.vid_margins_x / 2
-    this.sprite.y = (this.y - 1) * this.sprite.height + this.video.vid_offset_y + this.video.txt_offset_y + this.video.vid_margins_y / 2
+    this.sprite.x = (this.x - 1) * this.sprite.width + this.monitor.video.offset_x + this.monitor.txt.offset_x + this.monitor.video.margins_x / 2
+    this.sprite.y = (this.y - 1) * this.sprite.height + this.monitor.video.offset_y + this.monitor.txt.offset_y + this.monitor.video.margins_y / 2
     super.update()
   }
 
 }
 
 
-export class MouseCursorOverlay extends Overlay {
+MouseCursorOverlay = class extends Overlay {
 
-  constructor (video, width, height, refresh, offset) {
-    super(video, width, height)
+  constructor (monitor, width, height, refresh, offset) {
+    super(monitor, width, height)
 
     this.refresh = refresh || 5
     this.offset_x = offset ? offset.x : 0
@@ -293,106 +307,111 @@ export class MouseCursorOverlay extends Overlay {
 
     this.create()
 
-    let data = this.context.getImageData(0, 0, this.width, this.height)
-    let pixels = data.data
+    let image_data = this.context.getImageData(0, 0, this.width, this.height)
+    let pixels = image_data.data
     let len = pixels.length
-    // let c = this.video.palette_rgba(1)
+    // let c = this.monitor.pal.to_rgba(1)
     for (let i = 0; i < len; i += 4) {
       pixels.set([200, 100, 50, 200], i)
     }
 
-    this.context.putImageData(data, 0, 0)
+    this.context.putImageData(image_data, 0, 0)
   }
 
-  tick (t) {
+  tick (t, delay) {
     if (t - this.last >= this.refresh) {
       this.last = t
-
       this.update()
     }
   }
 
   update () {
-    this.sprite.x = (this.x + this.offset_x) * this.sprite.scale.x + this.video.vid_offset_x
-    this.sprite.y = (this.y + this.offset_y) * this.sprite.scale.y + this.video.vid_offset_y
+    this.sprite.x = (this.x + this.offset_x) * this.sprite.scale.x + this.monitor.video.offset_x
+    this.sprite.y = (this.y + this.offset_y) * this.sprite.scale.y + this.monitor.video.offset_y
     super.update()
   }
 
 }
 
 
-export class Overlays {
+Overlays = class {
 
-  overlays_init () {
-    let width = this.renderer.width
-    let height = this.renderer.height
-    let scale = this.vid_scale
-    let margins_x = this.vid_margins_x
-    let margins_y = this.vid_margins_y
+  constructor (monitor) {
+    this.monitor = monitor
 
-    this.overlays = {}
+    let video = monitor.video
+    let txt = monitor.txt
+    let spr = monitor.spr
 
-    this.overlays.screen = new ScreenOverlay(this, this.vid_width, this.vid_height)
-    this.overlays.screen.sprite.scale = new PIXI.Point(scale, scale)
-    this.stage.addChild(this.overlays.screen.sprite)
+    let width = monitor.renderer.width
+    let height = monitor.renderer.height
+    let scale = video.scale
+    let margins_x = video.margins_x
+    let margins_y = video.margins_y
 
-    this.overlays.textCursor = new TextCursorOverlay(this, this.chr_width, this.chr_height)
-    this.overlays.textCursor.sprite.scale = new PIXI.Point(scale, scale)
-    this.stage.addChild(this.overlays.textCursor.sprite)
+    this.screen = new ScreenOverlay(monitor, width, height)
+    this.screen.sprite.scale = new PIXI.Point(scale, scale)
+    monitor.stage.addChild(this.screen.sprite)
 
-    this.overlays.mouseCursor = new MouseCursorOverlay(this, this.spr_width, this.spr_height)
-    this.overlays.mouseCursor.sprite.scale = new PIXI.Point(scale, scale)
-    this.stage.addChild(this.overlays.mouseCursor.sprite)
+    this.textCursor = new TextCursorOverlay(monitor, txt.chr_width, txt.chr_height)
+    this.textCursor.sprite.scale = new PIXI.Point(scale, scale)
+    monitor.stage.addChild(this.textCursor.sprite)
 
-    this.overlays.scanlines = new ScanlinesOverlay(this, width, height)
-    this.stage.addChild(this.overlays.scanlines.sprite)
+    this.mouseCursor = new MouseCursorOverlay(monitor, spr.width, spr.height)
+    this.mouseCursor.sprite.scale = new PIXI.Point(scale, scale)
+    monitor.stage.addChild(this.mouseCursor.sprite)
 
-    this.overlays.scanline = new ScanlineOverlay(this, width, height)
-    this.stage.addChild(this.overlays.scanline.sprite)
+    this.scanlines = new ScanlinesOverlay(monitor, width, height)
+    monitor.stage.addChild(this.scanlines.sprite)
 
-    this.overlays.rgb = new RgbOverlay(this, width, height)
-    this.stage.addChild(this.overlays.rgb.sprite)
+    this.scanline = new ScanlineOverlay(monitor, width, height)
+    monitor.stage.addChild(this.scanline.sprite)
 
-    this.overlays.noises = new NoisesOverlay(this, width, height)
+    this.rgb = new RgbOverlay(monitor, width, height)
+    monitor.stage.addChild(this.rgb.sprite)
 
-    this.overlays.crt = new CrtOverlay(this, width, height)
-    this.stage.addChild(this.overlays.crt.sprite)
+    this.noises = new NoisesOverlay(monitor, width, height)
 
-    let tex = PIXI.Texture.fromImage(require('file?name=[path]/[name].[ext]!../../../../imgs/crt.png'))
-    this.overlays.monitor = new PIXI.Sprite(tex)
-    this.overlays.monitor.width = width + margins_x
-    this.overlays.monitor.height = height + margins_y
-    this.overlays.monitor.x = margins_x / -2
-    this.overlays.monitor.y = margins_y / -2
-    this.stage.addChild(this.overlays.monitor)
+    this.crt = new CrtOverlay(monitor, width, height)
+    monitor.stage.addChild(this.crt.sprite)
+
+    let texture = PIXI.Texture.fromImage(path.join(__dirname, '../app/assets/imgs/crt.png'))
+    this.frame = new PIXI.Sprite(texture)
+    this.frame.width = width + margins_x / 2
+    this.frame.height = height + margins_y / 2
+    this.frame.x = margins_x / 2 / -2
+    this.frame.y = margins_y / 2 / -2
+    monitor.stage.addChild(this.frame)
   }
 
-  overlays_tick (t) {
-    this.overlays.screen.tick(t)
-    this.overlays.scanlines.tick(t)
-    this.overlays.scanline.tick(t)
-    this.overlays.rgb.tick(t)
-    this.overlays.noises.tick(t)
-    this.overlays.crt.tick(t)
-    this.overlays.textCursor.tick(t)
-    this.overlays.mouseCursor.tick(t)
+  tick (t, delay) {
+    this.screen.tick(t, delay)
+    this.scanlines.tick(t, delay)
+    this.scanline.tick(t, delay)
+    this.rgb.tick(t, delay)
+    this.noises.tick(t, delay)
+    this.crt.tick(t, delay)
+    this.textCursor.tick(t, delay)
+    this.mouseCursor.tick(t, delay)
   }
 
-  overlays_reset () {
-    this.overlays.screen.reset()
-    this.overlays.scanlines.reset()
-    this.overlays.scanline.reset()
-    this.overlays.rgb.reset()
-    this.overlays.noises.reset()
-    this.overlays.crt.reset()
-    this.overlays.textCursor.reset()
-    this.overlays.mouseCursor.reset()
+  reset () {
+    this.screen.reset()
+    this.scanlines.reset()
+    this.scanline.reset()
+    this.rgb.reset()
+    this.noises.reset()
+    this.crt.reset()
+    this.textCursor.reset()
+    this.mouseCursor.reset()
   }
 
-  overlays_shut () {
-    for (let k in this.overlays) {
-      let o = this.overlays[k].canvas
-      o.shut()
+  shut () {
+    for (let k in this) {
+      let o = this[k].canvas
+      if (o) {
+        o.shut()
+      }
     }
   }
 

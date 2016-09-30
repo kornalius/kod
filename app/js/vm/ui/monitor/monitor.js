@@ -1,48 +1,57 @@
-import { mixin } from '../../../globals.js'
 import { Overlays } from './overlays.js'
 
+export var Monitor
 
-export class Monitor {
+Monitor = class {
 
-  monitor_init () {
+  constructor (video, pal, txt, spr) {
+    this.video = video
+    this.pal = pal
+    this.txt = txt
+    this.spr = spr
+
     this.stage = new PIXI.Container()
 
-    this.renderer = new PIXI.autoDetectRenderer(this.vid_width * this.vid_scale + this.vid_margins_x, this.vid_height * this.vid_scale + this.vid_margins_y, null, { })
-    this.renderer.view.style.position = 'absolute'
-    this.renderer.view.style.top = Math.trunc(this.vid_margins_x / 2) + 'px'
-    this.renderer.view.style.left = Math.trunc(this.vid_margins_y / 2) + 'px'
+    this.renderer = new PIXI.autoDetectRenderer(this.video.width * this.video.scale + this.video.margins_x, this.video.height * this.video.scale + this.video.margins_y, null, { })
 
-    window.addEventListener('resize', this.monitor_resize.bind(this))
+    this.renderer.view.style.position = 'absolute'
+    this.renderer.view.style.top = Math.trunc(this.video.margins_x / 2) + 'px'
+    this.renderer.view.style.left = Math.trunc(this.video.margins_y / 2) + 'px'
+
+    window.addEventListener('resize', this.resize.bind(this))
 
     document.body.appendChild(this.renderer.view)
 
-    this.overlays_init()
-    this.overlays_reset()
+    this.overlays = new Overlays(this)
   }
 
-  monitor_resize () {
+  resize () {
     // let ratio = Math.min(window.innerWidth / this.width, window.innerHeight / this.height)
     // this.stage.scale.x = this.stage.scale.y = ratio
     // this.renderer.monitor_resize(Math.ceil(this.width * ratio), Math.ceil(this.height * ratio))
     this.renderer.view.style.left = window.innerWidth * 0.5 - this.renderer.width * 0.5 + 'px'
     this.renderer.view.style.top = window.innerHeight * 0.5 - this.renderer.height * 0.5 + 'px'
-    if (this.vid_refresh) {
-      this.vid_refresh()
+    if (this.refresh) {
+      this.refresh()
     }
   }
 
-  monitor_tick (t) {
-    this.overlays_tick(t)
+  tick (t, delta) {
+    this.overlays.tick(t, delta)
   }
 
-  monitor_reset () {
-    this.overlays_reset()
+  reset () {
+    this.overlays.reset()
   }
 
-  monitor_shut () {
-    this.overlays_shut()
+  shut () {
+    this.overlays.shut()
+
+    this.stage.destroy()
+    this.stage = null
+
+    this.renderer.destroy()
+    this.renderer = null
   }
 
 }
-
-mixin(Monitor.prototype, Overlays.prototype)

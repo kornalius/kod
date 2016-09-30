@@ -2,7 +2,7 @@
 
 #MY_CONST 2 * (3 + 4)
 
-log(true, false, PI)
+puts(true, false, PI)
 
 let x
 let y = 10
@@ -14,58 +14,67 @@ let s = { :k 10 :f => (x) return x end }
 x = 100
 y += 20
 
-log(i j x z[1] MY_CONST, y)
+puts(i j x z[1] MY_CONST, y)
 
 if 30 > 20
-  log("greater")
+  puts("greater")
   // i = 23
   if (i > 20)
-    log("a")
+    puts("a")
   else
-    log("b")
+    puts("b")
   end
 else if (20 > (3 + 4) * i)
-  log("cool")
+  puts("cool")
 else
-  log("lesser")
+  puts("lesser")
 
 end
 
 let t = 20
 while (i < 20)
   let t = 10
-  log(t)
+  puts(t)
   i = i + 1
 end
-log(t)
+puts(t)
 
 let f => (a, b, c)
-  log(a / b + c)
+  puts(a / b + c)
 end
 
 f(10, 20, 30)
 
-log(s.k, s.f(2), s.f(103))
+puts(s.k, s.f(2), s.f(103))
 
 for i = 1 to s.k
-  log(i)
+  puts(i)
 end
 
-class myClass
+class myClass1
 
-  constructor => ()
+  constructor => (a)
 
     let in_fn => (a)
-      log(a)
+      puts(a)
     end
 
-    @x = 10
-    @y = 20
-    log(@)
+    @x = a
+    @y = a + 10
+    puts(@)
     in_fn(100)
   end
 
 end
 
-let c = new myClass()
+class myClass2 : myClass1
 
+  constructor => (a)
+    super(a)
+  end
+
+end
+
+let c = new myClass2(10)
+
+puts(m_x)
