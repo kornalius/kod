@@ -1,4 +1,5 @@
 import { VM } from './vm/vm.js'
+import { OS } from '../os/os.js'
 import { fs, p } from './utils.js'
 
 // let win = new BrowserWindow({ width: 800, height: 600 })
@@ -12,5 +13,7 @@ fs.readFile(pn, 'utf8', (err, data) => {
     console.log(data)
     vm.load(pn, data)
     vm.run()
+    vm.os = new OS(vm)
+    vm.os.boot()
   }
 })

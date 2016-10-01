@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { fs, path } from '../../utils.js'
 import { Chip } from '../chip.js'
 
@@ -132,32 +133,34 @@ TextChip = class extends Chip {
     this.offset_y = offset ? offset.y : 0
 
     this.chr_count = char_count || 256
-    this.chr_width = char_width || 6
-    this.chr_height = char_height || 10
-    this.chr_offset_x = char_offset ? char_offset.x : 0
-    this.chr_offset_y = char_offset ? char_offset.y : 4
+
+    this.chr_width = char_width || 4
+    this.chr_height = char_height || 7
     this.chr_size = this.chr_width * this.chr_height
+    this.chr_offset_x = char_offset ? char_offset.x : 0
+    this.chr_offset_y = char_offset ? char_offset.y : 3
+    this.chr_font = '4x6'
 
     this.width = Math.round(this.video.width / this.chr_width)
     this.height = Math.round(this.video.height / this.chr_height)
     this.size = this.width * this.height * 3
-    this.data = new Uint8Array(this.size)
+    this.data = new Uint8ClampedArray(this.size)
 
     this.fnt_size = this.chr_count * this.chr_size
-    this.fnt_data = new Uint8Array(this.fnt_size)
+    this.fnt_data = new Uint8ClampedArray(this.fnt_size)
 
     this.publicize([
-      { name: 'chr_count' },
-      { name: 'chr_width' },
-      { name: 'chr_height' },
-      { name: 'chr_offset_x' },
-      { name: 'chr_offset_y' },
-      { name: 'chr_size' },
+      { name: 'chr_count', readonly: true },
+      { name: 'chr_width', readonly: true },
+      { name: 'chr_height', readonly: true },
+      { name: 'chr_offset_x', readonly: true },
+      { name: 'chr_offset_y', readonly: true },
+      { name: 'chr_size', readonly: true },
 
       { name: 'txt_width', value: 'width', readonly: true },
       { name: 'txt_height', value: 'height', readonly: true },
       { name: 'txt_size', value: 'size', readonly: true },
-      { name: 'fnt_size' },
+      { name: 'fnt_size', readonly: true },
       { name: 'fnt_data' },
       { name: 'txt_data', value: 'data', readonly: true },
 
@@ -169,6 +172,7 @@ TextChip = class extends Chip {
       { name: 'at', value: 'char_at' },
       { name: 'put' },
       { name: 'print' },
+      { name: 'println' },
       { name: 'pos' },
       { name: 'move_to' },
       { name: 'move_by' },
@@ -221,7 +225,7 @@ TextChip = class extends Chip {
 
   load_fnt () {
     let b = new BDF()
-    fs.readFile(path.join(__dirname, '../app/assets/fonts/ctrld-fixed-10r.bdf'), 'utf8', (err, data) => {
+    fs.readFile(path.join(__dirname, '../app/assets/fonts/' + this.chr_font + '.bdf'), 'utf8', (err, data) => {
       if (!err) {
         b.load(data)
         // let points = b.meta.size.points
@@ -249,7 +253,7 @@ TextChip = class extends Chip {
           }
         }
 
-        this.test()
+        // this.test()
       }
     })
     return b
@@ -312,7 +316,9 @@ TextChip = class extends Chip {
   }
 
   put (ch, fg = 1, bg = 0) {
-    switch (ch.charCodeAt(0)) {
+    let cc = _.isString(ch) ? ch.charCodeAt(0) : ch
+
+    switch (cc) {
       case 13:
       case 10:
         this.cr()
@@ -322,8 +328,8 @@ TextChip = class extends Chip {
         return
     }
 
-    let { x, y } = this.pos()
-    this.data.set([ch.charCodeAt(0), fg, bg], this.index(x, y))
+    let { x, y } = this.pos
+    this.data.set([cc, fg, bg], this.index(x, y))
 
     this.textCursor.x++
     if (this.textCursor.x > this.width) {
@@ -334,13 +340,17 @@ TextChip = class extends Chip {
   }
 
   print (text, fg, bg) {
-    for (let c of text) {
+    for (let c of text || '') {
       this.put(c, fg, bg)
     }
     return this
   }
 
-  pos () { return { x: this.textCursor.x, y: this.textCursor.y } }
+  println (text, fg, bg) { return this.print((text || '') + '\n', fg, bg) }
+
+  get pos () { return { x: this.textCursor.x, y: this.textCursor.y } }
+
+  set pos (value) { return this.move_to(value.x, value.y) }
 
   move_to (x, y) {
     if (x > this.width) {
@@ -392,28 +402,28 @@ TextChip = class extends Chip {
   }
 
   clear_eol () {
-    let { x, y } = this.pos()
+    let { x, y } = this.pos
     let s = this.index(x, y)
     this.data.fill(0, s, this.index(this.width, y) - s)
     this.refresh()
   }
 
   clear_eos () {
-    let { x, y } = this.pos()
+    let { x, y } = this.pos
     let s = this.index(x, y)
     this.data.fill(0, s, this.size - s)
     this.refresh()
   }
 
   clear_bol () {
-    let { x, y } = this.pos()
+    let { x, y } = this.pos
     let s = this.index(x, y)
     this.data.fill(0, s, this.index(1, y) - s)
     this.refresh()
   }
 
   clear_bos () {
-    let { x, y } = this.pos()
+    let { x, y } = this.pos
     this.data.fill(0, 0, this.index(x, y) - 1)
     this.refresh()
   }
@@ -484,13 +494,31 @@ TextChip = class extends Chip {
     this.move_to(1, 2)
     this.print(chars, 25, 0)
 
-    this.move_to(1, 23)
+    this.move_to(1, 22)
     this.print('Second to last line', 1, 0)
 
-    this.move_to(1, 24)
+    this.move_to(1, 23)
     this.print('012345678901234567890123456789012345678901234567890123', 21, 0)
 
+    // let y = 1
+    // for (let c = 1; c < 4; c++) {
+    //   for (let i = 0; i < 10; i++) {
+    //     this.move_to(1, y++)
+    //     this.put('0'.charCodeAt(0) + i)
+    //   }
+    // }
+
     this.refresh()
+
+    // setTimeout(() => {
+      // setInterval(() => {
+        // for (var i = 0; i < 50; i++) {
+          // this.move_to(_.random(1, this.width), _.random(1, this.height))
+          // this.print(String.fromCharCode(_.random(1, 255)), _.random(0, 31), _.random(0, 31))
+        // }
+        // this.refresh()
+      // }, 1)
+    // }, 1500)
   }
 
 }

@@ -25,14 +25,6 @@ MouseChip = class extends Chip {
   boot (cold) {
     super.boot(cold)
 
-    let video = this.video
-    let renderer = video.monitor.renderer
-    let margins_x = video.margins_x
-    let margins_y = video.margins_y
-    let cursor = video.monitor.overlays.mouseCursor
-
-    this.size = new PIXI.Point(renderer.width - margins_x / 2 - cursor.sprite.width, renderer.height - margins_y / 2 - cursor.sprite.height)
-
     let stage = this.video.monitor.stage
     if (stage) {
       stage.interactive = true
@@ -83,11 +75,17 @@ MouseChip = class extends Chip {
   }
 
   onMouseMove (e) {
-    let margins_x = this.video.margins_x
-    let margins_y = this.video.margins_y
-    let cursor = this.video.monitor.overlays.mouseCursor
-    let x = Math.trunc(Math.min(this.size.x, Math.max(margins_x / 2, e.data.global.x)) / cursor.sprite.scale.x)
-    let y = Math.trunc(Math.min(this.size.y, Math.max(margins_y / 2, e.data.global.y)) / cursor.sprite.scale.y)
+    let video = this.video
+    let renderer = video.monitor.renderer
+    let margins_x = video.margins_x
+    let margins_y = video.margins_y
+    let cursor = video.monitor.overlays.mouseCursor
+    let sprite = cursor.sprite
+
+    let size = new PIXI.Point(renderer.width - margins_x / 2 - sprite.width, renderer.height - margins_y / 2 - sprite.height)
+
+    let x = Math.trunc(Math.min(size.x, Math.max(margins_x / 2, e.data.global.x)) / sprite.scale.x)
+    let y = Math.trunc(Math.min(size.y, Math.max(margins_y / 2, e.data.global.y)) / sprite.scale.y)
 
     this.x = x
     this.y = y

@@ -1,4 +1,4 @@
-import _ from 'lodash'
+// import _ from 'lodash'
 
 import { delay, runtime_error } from '../globals.js'
 
@@ -16,6 +16,8 @@ import { PaletteChip } from './chips/palette.js'
 import { SpriteChip } from './chips/sprite.js'
 import { TextChip } from './chips/text.js'
 import { VideoChip } from './chips/video.js'
+
+import { EventEmitter2 } from 'eventemitter2'
 
 export var VM
 
@@ -42,7 +44,11 @@ VM = class {
       // }
     // }
 
+    this.eventEmitter = new EventEmitter2({ wildcard: true })
+
     this.publics = {}
+
+    this.tickers = []
 
     this.int = new Interrupt(this)
     this.dbg = new Debugger(this)
@@ -60,6 +66,8 @@ VM = class {
     this.reset()
 
     if (cold) {
+      this.tickers = []
+
       this.chips = {}
       this.chips.cpu = new CpuChip(this)
       this.chips.video = new VideoChip(this)
@@ -150,12 +158,24 @@ VM = class {
 
   resume () { this.status = _VM_RUNNING }
 
+  addTicker (ticker) {
+    this.tickers.push(ticker)
+  }
+
+  removeTicker (ticker) {
+    _.pull(this.tickers, ticker)
+  }
+
   tick (delta) {
     if (this.status === _VM_RUNNING) {
       let t = performance.now()
 
       for (let k in this.chips) {
         this.chips[k].tick(t, delta)
+      }
+
+      for (let ticker of this.tickers) {
+        ticker.tick(t, delta)
       }
 
       this.int.tick(t, delta)

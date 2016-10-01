@@ -9,9 +9,25 @@ export class Chip {
   publicize (data) {
     let that = this
     let publics = this.vm.publics
+
+    let defineProperty = (desc, name, prop, readonly) => {
+      let description = { enumerable: true }
+      if (desc && desc.get) {
+        readonly = readonly || _.isUndefined(desc.set)
+        description.get = desc.get
+        description.set = !readonly && desc.set ? desc.set : undefined
+      }
+      else {
+        description.get = () => that[prop]
+        description.set = !readonly ? value => { that[prop] = value } : undefined
+      }
+      Object.defineProperty(publics, name, description)
+    }
+
     for (let d of data) {
       let name = d.name
       let prop = name
+
       if (d.value) {
         if (_.isFunction(d.value)) {
           publics[name] = d.value.bind(that)
@@ -22,16 +38,18 @@ export class Chip {
         }
       }
 
-      if (_.isFunction(that[prop])) {
+      let desc = Object.getOwnPropertyDescriptor(that.constructor.prototype, prop)
+      if (desc) {
+        defineProperty(desc, name, prop, d.readonly)
+      }
+      else if (_.isFunction(that[prop])) {
         publics[name] = that[prop].bind(that)
       }
       else {
         let description = {
           enumerable: true,
           get: () => that[prop],
-        }
-        if (!d.readonly) {
-          description.set = value => { that[prop] = value }
+          set: !d.readonly ? value => { that[prop] = value } : undefined
         }
         Object.defineProperty(publics, name, description)
       }

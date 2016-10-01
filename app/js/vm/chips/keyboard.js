@@ -113,6 +113,8 @@ KeyboardChip = class extends Chip {
         break
     }
 
+    this.vm.emit('keydown', code, location)
+
     // e.preventDefault()
     e.stopPropagation()
   }
@@ -195,6 +197,8 @@ KeyboardChip = class extends Chip {
         this.joystick &= ~0x100
         break
     }
+
+    this.vm.emit('keyup', code, location)
 
     // e.preventDefault()
     e.stopPropagation()

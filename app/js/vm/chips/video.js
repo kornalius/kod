@@ -8,10 +8,10 @@ VideoChip = class extends Chip {
   constructor (vm, width, height, scale, offset, margins) {
     super(vm)
 
-    this.width = width || 378
-    this.height = height || 264
+    this.width = width || 240
+    this.height = height || 160
     this.size = this.width * this.height
-    this.scale = scale || 3
+    this.scale = scale || 4
     this.offset_x = offset ? offset.x : 0
     this.offset_y = offset ? offset.y : 0
     this.margins_x = margins ? margins.x : 24
@@ -20,7 +20,7 @@ VideoChip = class extends Chip {
     this.force_update = false
     this.force_flip = false
 
-    this.data = new Uint8Array(this.size)
+    this.data = new Uint8ClampedArray(this.size)
 
     this.clear()
 
@@ -43,8 +43,12 @@ VideoChip = class extends Chip {
       if (!this.monitor) {
         this.monitor = new Monitor(this, this.vm.chips.palette, this.vm.chips.text, this.vm.chips.sprite)
       }
+      this.screen = this.monitor.overlays.screen
+      this.image_data = this.screen.context.getImageData(0, 0, this.width, this.height)
+      this.pixels = new Uint32Array(this.image_data.data.buffer)
       this.monitor.resize()
-      this.test()
+
+      // this.test()
     }
   }
 
@@ -88,19 +92,12 @@ VideoChip = class extends Chip {
   }
 
   flip () {
-    let screen = this.monitor.overlays.screen
-    let image_data = screen.context.getImageData(0, 0, screen.width, screen.height)
-    let pixels = new Uint32Array(image_data.data.buffer)
-
     let data = this.data
     let pal = this.vm.chips.palette
-
     for (let i = 0; i < this.size; i++) {
-      pixels[i] = pal.to_rgba(data[i])
+      this.pixels[i] = pal.to_rgba(data[i])
     }
-
-    screen.context.putImageData(image_data, 0, 0)
-
+    this.screen.context.putImageData(this.image_data, 0, 0)
     this.force_flip = false
   }
 
@@ -131,10 +128,10 @@ VideoChip = class extends Chip {
   test () {
     this.data.fill(10, 0, 2000)
 
-    this.pixel(200, 0)
-    this.pixel(400, 6)
-    this.pixel(500, 8)
-    this.pixel(600, 20)
+    this.pixel(100, 0)
+    this.pixel(200, 1)
+    this.pixel(300, 8)
+    this.pixel(400, 12)
 
     this.refresh()
   }

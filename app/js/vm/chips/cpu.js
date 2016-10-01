@@ -9,6 +9,9 @@ CpuChip = class extends Chip {
 
     this.publicize([
       { name: 'puts', value: (...args) => console.log(...args) },
+      { name: 'on', value: (...args) => this.vm.on(...args) },
+      { name: 'off', value: (...args) => this.vm.off(...args) },
+      { name: 'emit', value: (...args) => this.vm.emit(...args) },
     ])
   }
 
