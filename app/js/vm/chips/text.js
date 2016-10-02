@@ -149,6 +149,9 @@ TextChip = class extends Chip {
     this.fnt_size = this.chr_count * this.chr_size
     this.fnt_data = new Uint8ClampedArray(this.fnt_size)
 
+    this.fg = 1
+    this.bg = 0
+
     this.publicize([
       { name: 'chr_count', readonly: true },
       { name: 'chr_width', readonly: true },
@@ -164,6 +167,8 @@ TextChip = class extends Chip {
       { name: 'fnt_data' },
       { name: 'txt_data', value: 'data', readonly: true },
 
+      { name: 'txt_fg', value: 'fg' },
+      { name: 'txt_bg', value: 'bg' },
       { name: 'txt_flip', value: 'flip' },
       { name: 'txt_refresh', value: 'refresh' },
       { name: 'txt_scroll', value: 'scroll' },
@@ -210,15 +215,18 @@ TextChip = class extends Chip {
   tick (t, delta) {
     super.tick(t, delta)
     if (this.force_update) {
-      this.flip()
       this.video.force_update = true
-      this.video.force_flip = true
       this.force_update = false
+      if (this.force_flip) {
+        this.flip()
+        this.video.force_flip = true
+      }
     }
   }
 
   reset () {
     this.force_update = false
+    this.force_flip = false
     this.clear()
     super.reset()
   }
@@ -253,13 +261,15 @@ TextChip = class extends Chip {
           }
         }
 
-        // this.test()
+        this.test()
       }
     })
     return b
   }
 
   flip () {
+    this.force_flip = false
+
     let cw = this.chr_width
     let ch = this.chr_height
     let tw = this.width
@@ -273,15 +283,16 @@ TextChip = class extends Chip {
     let pixels = this.video.data
 
     let idx = 0
+    let px = 0
+    let py = 0
+
     for (let y = 0; y < th; y++) {
+      px = 0
       for (let x = 0; x < tw; x++) {
         let c = data[idx]
-        if (c) {
+        if (c > 31 && c < 256) {
           let fg = data[idx + 1]
           let bg = data[idx + 2]
-
-          let px = x * cw
-          let py = y * ch
 
           let ptr = c * fnt_sz
           for (let by = 0; by < ch; by++) {
@@ -291,13 +302,23 @@ TextChip = class extends Chip {
             }
           }
         }
+        else {
+          for (let by = py; by < py + ch; by++) {
+            pixels.fill(0, by * w + px, cw)
+          }
+        }
         idx += 3
+        px += cw
       }
+      py += ch
     }
+    return this
   }
 
   refresh (flip = true) {
     this.force_update = true
+    this.force_flip = flip
+    return this
   }
 
   index (x, y) {
@@ -315,28 +336,22 @@ TextChip = class extends Chip {
     return { ch: data[tidx], fg: data[tidx + 1], bg: data[tidx + 2] }
   }
 
-  put (ch, fg = 1, bg = 0) {
+  put (ch, fg, bg) {
     let cc = _.isString(ch) ? ch.charCodeAt(0) : ch
 
     switch (cc) {
-      case 13:
-      case 10:
-        this.cr()
-        return
+      case 13: case 10:
+        return this.cr()
       case 8:
-        this.bs()
-        return
+        return this.bs()
+      case 9:
+        return this.print('  ')
     }
 
     let { x, y } = this.pos
-    this.data.set([cc, fg, bg], this.index(x, y))
+    this.data.set([cc, fg !== undefined ? fg : this.fg, bg !== undefined ? bg : this.bg], this.index(x, y))
 
-    this.textCursor.x++
-    if (this.textCursor.x > this.width) {
-      this.cr()
-    }
-
-    this.refresh()
+    return this.move_by(1, 0, true, true)
   }
 
   print (text, fg, bg) {
@@ -352,27 +367,55 @@ TextChip = class extends Chip {
 
   set pos (value) { return this.move_to(value.x, value.y) }
 
-  move_to (x, y) {
+  move_to (x, y, wrap = false, flip = false) {
     if (x > this.width) {
-      x = this.width
+      if (wrap) {
+        x = 1
+        y++
+      }
+      else {
+        x = this.width
+      }
     }
     else if (x < 1) {
-      x = 1
+      if (wrap) {
+        x = this.width
+        y--
+      }
+      else {
+        x = 1
+      }
     }
+
     if (y > this.height) {
-      y = this.height
+      if (wrap) {
+        y = 1
+        x = 1
+      }
+      else {
+        y = this.height
+      }
     }
     else if (y < 1) {
-      y = 1
+      if (wrap) {
+        y = this.height
+        x = 1
+      }
+      else {
+        y = 1
+      }
     }
 
     this.textCursor.x = x
     this.textCursor.y = y
+    this.textCursor.sprite.visible = true
+    this.textCursor.last = performance.now()
+    this.textCursor.update(flip)
 
-    this.refresh(false)
+    return this.refresh(false)
   }
 
-  move_by (x, y) { return this.move_to(this.textCursor.x + x, this.textCursor.y + y) }
+  move_by (x, y, wrap = true, flip = false) { return this.move_to(this.textCursor.x + x, this.textCursor.y + y, wrap, flip) }
 
   bol () { return this.move_to(1, this.textCursor.y) }
 
@@ -382,7 +425,7 @@ TextChip = class extends Chip {
 
   eos () { return this.move_to(this.width, this.height) }
 
-  bs () { this.left(); this.put(' '); return this.left() }
+  bs () { return this.left().put(' ').left() }
 
   cr () { return this.move_to(1, this.textCursor.y + 1) }
 
@@ -398,40 +441,37 @@ TextChip = class extends Chip {
 
   clear () {
     this.data.fill(0)
-    this.refresh()
+    return this.refresh()
   }
 
   clear_eol () {
     let { x, y } = this.pos
-    let s = this.index(x, y)
-    this.data.fill(0, s, this.index(this.width, y) - s)
-    this.refresh()
+    this.data.fill(0, this.index(x, y), this.index(this.width, y) + 3)
+    return this.refresh()
   }
 
   clear_eos () {
     let { x, y } = this.pos
-    let s = this.index(x, y)
-    this.data.fill(0, s, this.size - s)
-    this.refresh()
+    this.data.fill(0, this.index(x, y), this.size)
+    return this.refresh()
   }
 
   clear_bol () {
     let { x, y } = this.pos
-    let s = this.index(x, y)
-    this.data.fill(0, s, this.index(1, y) - s)
-    this.refresh()
+    this.data.fill(0, this.index(x, y), this.index(1, y) + 3)
+    return this.refresh()
   }
 
   clear_bos () {
     let { x, y } = this.pos
-    this.data.fill(0, 0, this.index(x, y) - 1)
-    this.refresh()
+    this.data.fill(0, 0, this.index(x, y) + 3)
+    return this.refresh()
   }
 
   copy_line (sy, ty) {
     let si = this.line(sy)
     this.data.copy(si.start, this.line(ty), si.length)
-    this.refresh()
+    return this.refresh()
   }
 
   copy_col (sx, tx) {
@@ -442,23 +482,23 @@ TextChip = class extends Chip {
       let i = this.line(y)
       data.copy(i.start + sx, i.start + tx, 3)
     }
-    this.refresh()
+    return this.refresh()
   }
 
   erase_line (y) {
     let i = this.line(y)
-    this.data.fill(0, i.start, i.length)
-    this.refresh()
+    this.data.fill(0, i.start, i.length + 3)
+    return this.refresh()
   }
 
   erase_col (x) {
     let data = this.data
     let ls = this.line(0).start + x * 3
     for (let y = 0; y < this.height; y++) {
-      data.fill(0, ls, 3)
+      data.fill(0, ls, ls + 3)
       ls += this.width * 3
     }
-    this.refresh()
+    return this.refresh()
   }
 
   scroll (dy) {
@@ -467,38 +507,36 @@ TextChip = class extends Chip {
       this.data.copy(i.start, 0, this.size)
       i = this.line(dy)
       let s = i.start
-      this.data.fill(0, s, this.size - s)
-      this.refresh()
+      this.data.fill(0, s, this.size)
     }
     else if (dy < 0) {
       let i = this.line(dy + 1)
       this.data.copy(i.start, 0, this.size)
       i = this.line(dy)
       let s = i.start
-      this.data.fill(0, s, this.size - s)
-      this.refresh()
+      this.data.fill(0, s, this.size)
     }
+    return this.refresh()
   }
 
   test () {
-    this.move_to(1, 1)
-    this.put('A', 29, 15)
+    this.move_to(1, 1).put('A', 29, 15)
 
-    this.move_to(10, 11)
-    this.print('Welcome to DX32\nÉgalitée!', 2, 6)
+    this.move_to(10, 11).print('Welcome to DX32\nÉgalitée!', 2, 6)
 
     let chars = ''
     for (let i = 33; i < 256; i++) {
       chars += String.fromCharCode(i)
     }
-    this.move_to(1, 2)
-    this.print(chars, 25, 0)
+    this.move_to(1, 2).print(chars, 25, 0)
 
-    this.move_to(1, 22)
-    this.print('Second to last line', 1, 0)
+    this.move_to(15, 2).bs().bs().bs().bs()
 
-    this.move_to(1, 23)
-    this.print('012345678901234567890123456789012345678901234567890123', 21, 0)
+    this.move_to(25, 2).clear_eol()
+
+    this.move_to(1, 22).print('Second to last line', 1, 0)
+
+    this.move_to(1, 23).print('012345678901234567890123456789012345678901234567890123', 21, 0)
 
     // let y = 1
     // for (let c = 1; c < 4; c++) {

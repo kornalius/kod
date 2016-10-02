@@ -93,9 +93,10 @@ VideoChip = class extends Chip {
 
   flip () {
     let data = this.data
+    let pixels = this.pixels
     let pal = this.vm.chips.palette
     for (let i = 0; i < this.size; i++) {
-      this.pixels[i] = pal.to_rgba(data[i])
+      pixels[i] = pal.data[data[i]]
     }
     this.screen.context.putImageData(this.image_data, 0, 0)
     this.force_flip = false
@@ -104,7 +105,7 @@ VideoChip = class extends Chip {
   pixel (i, c) {
     let data = this.data
     if (c !== undefined && data[i] !== c) {
-      data[i] = c
+      data[i] = Math.max(0, Math.min(c, this.vm.chips.palette.count - 1))
     }
     return data[i]
   }

@@ -1,4 +1,4 @@
-// import _ from 'lodash'
+import _ from 'lodash'
 
 import { delay, runtime_error } from '../globals.js'
 
@@ -25,10 +25,19 @@ export const _VM_STOPPED = 0
 export const _VM_RUNNING = 1
 export const _VM_PAUSED = 2
 
-VM = class {
+VM = class extends EventEmitter2 {
 
   constructor () {
+    super({ wildcard: true, delimiter: '.' })
+
     window._vm = this
+
+    // Check for littleEndian
+    let b = new ArrayBuffer(4)
+    let a = new Uint32Array(b)
+    let c = new Uint8Array(b)
+    a[0] = 0xdeadbeef
+    this.littleEndian = c[0] === 0xef
 
     // this.PObject = {
       // get: (target, prop) => {
@@ -44,11 +53,9 @@ VM = class {
       // }
     // }
 
-    this.eventEmitter = new EventEmitter2({ wildcard: true })
-
     this.publics = {}
 
-    this.tickers = []
+    this.processes = []
 
     this.int = new Interrupt(this)
     this.dbg = new Debugger(this)
@@ -66,7 +73,7 @@ VM = class {
     this.reset()
 
     if (cold) {
-      this.tickers = []
+      this.processes = []
 
       this.chips = {}
       this.chips.cpu = new CpuChip(this)
@@ -78,34 +85,62 @@ VM = class {
       this.chips.mouse = new MouseChip(this)
     }
 
+    for (let p of this.processes) {
+      if (_.isFunction(p.boot)) {
+        p.boot(cold)
+      }
+    }
+
     for (let k in this.chips) {
       this.chips[k].boot(cold)
     }
   }
 
   restart (cold = false) {
+    for (let p of this.processes) {
+      if (_.isFunction(p.boot)) {
+        p.boot(cold)
+      }
+    }
+
     for (let k in this.chips) {
       this.chips[k].boot(cold)
     }
+
     if (cold) {
       this.shut()
     }
+
     this.boot(cold)
   }
 
   reset () {
+    for (let p of this.processes) {
+      if (_.isFunction(p.reset)) {
+        p.reset()
+      }
+    }
+
     for (let k in this.chips) {
       this.chips[k].reset()
     }
+
     this.status = _VM_RUNNING
     this.int.reset()
     this.dbg.reset()
   }
 
   shut () {
+    for (let p of this.processes) {
+      if (_.isFunction(p.shut)) {
+        p.shut()
+      }
+    }
+
     for (let k in this.chips) {
       this.chips[k].shut()
     }
+
     this.int.shut()
     this.dbg.shut()
   }
@@ -158,24 +193,26 @@ VM = class {
 
   resume () { this.status = _VM_RUNNING }
 
-  addTicker (ticker) {
-    this.tickers.push(ticker)
+  addProcess (p) {
+    this.processes.push(p)
   }
 
-  removeTicker (ticker) {
-    _.pull(this.tickers, ticker)
+  removeProcess (p) {
+    _.pull(this.processes, p)
   }
 
   tick (delta) {
     if (this.status === _VM_RUNNING) {
       let t = performance.now()
 
-      for (let k in this.chips) {
-        this.chips[k].tick(t, delta)
+      for (let p of this.processes) {
+        if (_.isFunction(p.tick)) {
+          p.tick(t, delta)
+        }
       }
 
-      for (let ticker of this.tickers) {
-        ticker.tick(t, delta)
+      for (let k in this.chips) {
+        this.chips[k].tick(t, delta)
       }
 
       this.int.tick(t, delta)

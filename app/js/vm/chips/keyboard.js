@@ -113,7 +113,7 @@ KeyboardChip = class extends Chip {
         break
     }
 
-    this.vm.emit('keydown', code, location)
+    this.vm.emit('keydown', e.key, e.keyCode, e.location)
 
     // e.preventDefault()
     e.stopPropagation()
@@ -198,7 +198,7 @@ KeyboardChip = class extends Chip {
         break
     }
 
-    this.vm.emit('keyup', code, location)
+    this.vm.emit('keyup', e.key, e.keyCode, e.location)
 
     // e.preventDefault()
     e.stopPropagation()

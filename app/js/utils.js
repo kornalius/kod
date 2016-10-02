@@ -7,14 +7,11 @@ _.extend(_, require('lodash'))
 
 _.templateSettings.interpolate = /#{([\s\S]+?)}/g
 
-const EventEmitter = require('eventemitter2').EventEmitter2
 const fs = remote.require('fs-plus')
 
 import path from 'path'
 import raf from 'raf'
 import now from 'performance-now'
-
-const EE = new EventEmitter({ delimiter: '.' })
 
 let userPath = path.join(app.getAppPath(), '/user')
 if (!fs.existsSync(userPath)) {
@@ -82,8 +79,6 @@ export {
   saveFile,
   messageBox,
   remote,
-  EventEmitter,
-  EE,
   screen,
   BrowserWindow,
   app,

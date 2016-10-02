@@ -8,21 +8,19 @@ OS = class {
 
   constructor (vm) {
     this.vm = vm
-    this.shell = new Shell(this)
+    this.shell = null
   }
 
   boot (cold = true) {
+    if (cold) {
+      this.vm.addProcess(this)
+      this.shell = new Shell(this)
+    }
     this.shell.boot(cold)
-    this.vm.addTicker(this)
-  }
-
-  reset () {
-    this.shell.reset()
   }
 
   shut () {
-    this.shell.shut()
-    this.vm.removeTicker(this)
+    this.vm.removeProcess(this)
   }
 
   tick (t, delta) {

@@ -23,22 +23,25 @@ Readline = class {
   get active () { return this.status === _RDL_ACTIVE }
 
   start (text, cursor) {
-    this.start_pos = this.txt.pos()
+    this.start_pos = this.txt.pos
     this.status = _RDL_ACTIVE
-    this.set_text(text || '')
+    this.set_text(text)
     this.set_cursor(cursor || this.length)
     this.vm.on('keydown', this._keydownBound)
+    this.vm.emit('readline.start')
     return this
   }
 
   end () {
+    this.txt.println()
     this.status = _RDL_INACTIVE
     this.vm.off('keydown', this._keydownBound)
+    this.vm.emit('readline.end', this.text)
     return this
   }
 
-  keydown (key) {
-    switch (key) {
+  keydown (key, keyCode) {
+    switch (keyCode) {
       case 8: // backspace
         this.delete_text(this.cursor - 1, 1)
         this.move_cursor(-1)
@@ -78,14 +81,20 @@ Readline = class {
       case 13: // enter
         this.end()
         break
-
     }
+
+    if (key.length === 1) {
+      this.insert_text(this.cursor, key)
+      this.move_cursor(1)
+    }
+
+    console.log(key, keyCode, this.text)
   }
 
   get length () { return this.text.length }
 
   set_cursor (c) {
-    this.cursor = Math.max(0, Math.min(this.cursor + c, this.length))
+    this.cursor = Math.max(0, Math.min(c, this.length))
     return this.update_cursor()
   }
 
@@ -97,6 +106,7 @@ Readline = class {
 
   update_cursor () {
     this.txt.move_to(this.start_pos.x + this.cursor, this.start_pos.y)
+    this.txt.refresh()
     return this
   }
 
@@ -104,25 +114,25 @@ Readline = class {
     this.txt.move_to(this.start_pos.x, this.start_pos.y)
     this.txt.clear_eol()
     this.txt.print(this.text)
-    this.txt.refresh()
-    return this
+    return this.update_cursor()
   }
 
   clear_text () { return this.set_text('') }
 
   set_text (text) {
+    text = text || ''
     if (text !== this.text) {
       this.text = text
       this.update()
-      this.set_cursor(this.cursor)
     }
     return this
   }
 
   insert_text (i, text) {
+    text = text || ''
     let t = this.text
     if (i >= 0 && i < this.length) {
-      t = t.substring(0, i - 1) + text + t.substring(i)
+      t = t.substring(0, i + 1) + text + t.substring(i + 1)
     }
     else {
       t += text
@@ -131,11 +141,12 @@ Readline = class {
   }
 
   delete_text (i, c = 1) {
-    let t = this.text
     if (i >= 0 && i < this.length) {
-      t = t.splice(i, i + c - 1)
+      let t = this.text
+      t = t.substring(0, i) + t.substring(i + 1)
+      return this.set_text(t)
     }
-    return this.set_text(t)
+    return this
   }
 
 }
