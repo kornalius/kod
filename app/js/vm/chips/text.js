@@ -261,7 +261,7 @@ TextChip = class extends Chip {
           }
         }
 
-        this.test()
+        // this.test()
       }
     })
     return b
@@ -304,7 +304,8 @@ TextChip = class extends Chip {
         }
         else {
           for (let by = py; by < py + ch; by++) {
-            pixels.fill(0, by * w + px, cw)
+            let pi = by * w + px
+            pixels.fill(0, pi, pi + cw)
           }
         }
         idx += 3
@@ -441,7 +442,7 @@ TextChip = class extends Chip {
 
   clear () {
     this.data.fill(0)
-    return this.refresh()
+    return this.bos().refresh()
   }
 
   clear_eol () {

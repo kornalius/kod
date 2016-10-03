@@ -40,11 +40,11 @@ Readline = class {
     return this
   }
 
-  keydown (key, keyCode) {
-    switch (keyCode) {
+  keydown (keyboard) {
+    switch (keyboard.keyCode) {
       case 8: // backspace
-        this.delete_text(this.cursor - 1, 1)
-        this.move_cursor(-1)
+        let c = this.cursor
+        this.delete_text(c - 1, 1).set_cursor(c - 1)
         break
 
       case 46: // del
@@ -53,17 +53,26 @@ Readline = class {
 
       case 9: // tab
         if (this.options.accept_tabs) {
-          this.insert_text(this.cursor, _.repeat(' ', this.options.tab_width))
-          this.move_cursor(this.options.tab_width)
+          this.insert_text(this.cursor, _.repeat(' ', this.options.tab_width)).move_cursor(this.options.tab_width)
         }
         break
 
       case 37: // left
-        this.move_cursor(-1)
+        if (keyboard.meta) {
+          this.move_start()
+        }
+        else {
+          this.move_cursor(-1)
+        }
         break
 
       case 39: // right
-        this.move_cursor(1)
+        if (keyboard.meta) {
+          this.move_end()
+        }
+        else {
+          this.move_cursor(1)
+        }
         break
 
       case 36: // home
@@ -83,37 +92,38 @@ Readline = class {
         break
     }
 
-    if (key.length === 1) {
-      this.insert_text(this.cursor, key)
-      this.move_cursor(1)
+    if (keyboard.key.length === 1) {
+      let t = this.text.length
+      this.insert_text(this.cursor, keyboard.key)
+      if (this.length > t) {
+        this.move_cursor(1)
+      }
     }
-
-    console.log(key, keyCode, this.text)
   }
+
+  get max_length () { return this.txt.width - this.start_pos.x + 1 }
 
   get length () { return this.text.length }
 
   set_cursor (c) {
-    this.cursor = Math.max(0, Math.min(c, this.length))
+    this.cursor = c
     return this.update_cursor()
   }
 
   move_start () { return this.set_cursor(0) }
 
-  move_end () { return this.set_cursor(this.length - 1) }
+  move_end () { return this.set_cursor(this.length) }
 
   move_cursor (c = 1) { return this.set_cursor(this.cursor + c) }
 
   update_cursor () {
-    this.txt.move_to(this.start_pos.x + this.cursor, this.start_pos.y)
-    this.txt.refresh()
+    this.cursor = Math.max(0, Math.min(this.cursor, this.length))
+    this.txt.move_to(this.start_pos.x + this.cursor, this.start_pos.y).refresh()
     return this
   }
 
   update () {
-    this.txt.move_to(this.start_pos.x, this.start_pos.y)
-    this.txt.clear_eol()
-    this.txt.print(this.text)
+    this.txt.move_to(this.start_pos.x, this.start_pos.y).clear_eol().print(this.text)
     return this.update_cursor()
   }
 
@@ -129,15 +139,20 @@ Readline = class {
   }
 
   insert_text (i, text) {
-    text = text || ''
-    let t = this.text
-    if (i >= 0 && i < this.length) {
-      t = t.substring(0, i + 1) + text + t.substring(i + 1)
+    if (this.length + 1 < this.max_length) {
+      text = text || ''
+      let t = this.text
+      if (i >= 0 && i < this.length) {
+        t = t.substring(0, i) + text + t.substring(i)
+      }
+      else {
+        t += text
+      }
+      return this.set_text(t)
     }
     else {
-      t += text
+      return this
     }
-    return this.set_text(t)
   }
 
   delete_text (i, c = 1) {
@@ -148,5 +163,9 @@ Readline = class {
     }
     return this
   }
+
+  get words () { return this.text.split(' ') }
+
+  get words_index () { return this.text.split(' ') }
 
 }
