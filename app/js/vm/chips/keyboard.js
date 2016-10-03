@@ -10,8 +10,6 @@ KeyboardChip = class extends Chip {
     this.mods = 0
     this.joystick = 0
     this.keys = {}
-    this.key = ''
-    this.keyCode = 0
 
     this.publicize([
       { name: 'key', value: which => this.keys[which] },
@@ -53,8 +51,31 @@ KeyboardChip = class extends Chip {
   get right () { return this.joystick & 0x04 }
   get left () { return this.joystick & 0x08 }
 
+  eventDetails (e) {
+    return {
+      key: e.key,
+      keyCode: e.keyCode,
+      keys: this.keys,
+      mods: this.mods,
+      joystick: this.joystick,
+      shift: this.shift,
+      ctrl: this.ctrl,
+      alt: this.alt,
+      meta: this.meta,
+      numpad: this.numpad,
+      btn0: this.btn0,
+      btn1: this.btn1,
+      btn2: this.btn2,
+      btn3: this.btn3,
+      btn4: this.btn4,
+      up: this.up,
+      down: this.down,
+      right: this.right,
+      left: this.left,
+    }
+  }
+
   onKeydown (e) {
-    let code = e.keyCode
     let numpad = e.location === 3
     if (numpad) {
       this.mods |= 0x10
@@ -62,97 +83,92 @@ KeyboardChip = class extends Chip {
     else {
       this.mods &= ~0x10
     }
-    this.keys[code] = 1
+    this.keys[e.keyCode] = 1
 
-    this.key = e.key
-    this.keyCode = code
-
-    switch (code) {
-      case 16: // Shift
+    switch (e.key) {
+      case 'Shift':
         this.mods |= 0x01
         break
 
-      case 17: // Ctrl
+      case 'Control':
         this.mods |= 0x02
         break
 
-      case 18: // Alt
+      case 'Alt':
         this.mods |= 0x04
         break
 
-      case 91: // Meta
+      case 'Meta':
         this.mods |= 0x08
         break
 
-      case 38: // up
+      case 'ArrowUp':
         this.joystick |= 0x01
         break
 
-      case 56: // numpad 8
+      case '8':
         if (numpad) {
           this.joystick |= 0x01
         }
         break
 
-      case 40: // down
+      case 'ArrowDown':
         this.joystick |= 0x02
         break
 
-      case 50: // numpad 2
+      case '2':
         if (numpad) {
           this.joystick |= 0x02
         }
         break
 
-      case 37: // left
+      case 'ArrowLeft':
         this.joystick |= 0x04
         break
 
-      case 52: // numpad 4
+      case '4':
         if (numpad) {
           this.joystick |= 0x04
         }
         break
 
-      case 39: // right
+      case 'ArrowRight':
         this.joystick |= 0x08
         break
 
-      case 54: // numpad 6
+      case '6': // numpad 6
         if (numpad) {
           this.joystick |= 0x08
         }
         break
 
-      case 90: // button 0
+      case 'z': // button 0
         this.joystick |= 0x10
         break
 
-      case 88: // button 1
+      case 'x': // button 1
         this.joystick |= 0x20
         break
 
-      case 67: // button 2
+      case 'c': // button 2
         this.joystick |= 0x40
         break
 
-      case 32: // button 3
+      case ' ': // button 3
         this.joystick |= 0x80
         break
 
-      case 13: // button 4
+      case 'Enter': // button 4
         this.joystick |= 0x100
         break
     }
 
-    this.vm.emit('keydown', this)
+    this.emit('keydown', this.eventDetails(e))
 
-    // e.preventDefault()
     e.stopPropagation()
   }
 
   onKeyup (e) {
-    let code = e.keyCode
     let numpad = e.location === 3
     if (numpad) {
       this.mods |= 0x10
@@ -160,92 +176,88 @@ KeyboardChip = class extends Chip {
     else {
       this.mods &= ~0x10
     }
-    this.keys[code] = 0
+    this.keys[e.keyCode] = 0
 
-    this.key = e.key
-    this.keyCode = code
-
-    switch (code) {
-      case 16: // Shift
+    switch (e.key) {
+      case 'Shift':
         this.mods &= ~0x01
         break
 
-      case 17: // Ctrl
+      case 'Control':
         this.mods &= ~0x02
         break
 
-      case 18: // Alt
+      case 'Alt':
         this.mods &= ~0x04
         break
 
-      case 91: // Meta
+      case 'Meta':
         this.mods &= ~0x08
         break
 
-      case 38: // up
+      case 'ArrowUp':
         this.joystick &= ~0x01
         break
 
-      case 56: // numpad 8
+      case '8':
         if (numpad) {
           this.joystick &= ~0x01
         }
         break
 
-      case 40: // down
+      case 'ArrowDown':
         this.joystick &= ~0x02
         break
 
-      case 50: // numpad 2
+      case '2':
         if (numpad) {
           this.joystick &= ~0x02
         }
         break
 
-      case 37: // left
+      case 'ArrowLeft':
         this.joystick &= ~0x04
         break
 
-      case 52: // numpad 4
+      case '4':
         if (numpad) {
           this.joystick &= ~0x04
         }
         break
 
-      case 39: // right
+      case 'ArrowRight':
         this.joystick &= ~0x08
         break
 
-      case 54: // numpad 6
+      case '6': // numpad 6
         if (numpad) {
           this.joystick &= ~0x08
         }
         break
 
-      case 90: // button 0
+      case 'z': // button 0
         this.joystick &= ~0x10
         break
 
-      case 88: // button 1
+      case 'x': // button 1
         this.joystick &= ~0x20
         break
 
-      case 67: // button 2
+      case 'c': // button 2
         this.joystick &= ~0x40
         break
 
-      case 32: // button 3
+      case ' ': // button 3
         this.joystick &= ~0x80
         break
 
-      case 13: // button 4
+      case 'Enter': // button 4
         this.joystick &= ~0x100
         break
     }
 
-    this.vm.emit('keyup', this)
+    this.emit('keyup', this.eventDetails(e))
 
-    // e.preventDefault()
     e.stopPropagation()
   }
 

@@ -42,39 +42,7 @@ MouseChip = class extends Chip {
     }
   }
 
-  onMouseDown (e) {
-    switch (e.data.originalEvent.button) {
-      case 0: // left
-        this.btns |= 0x01
-        break
-
-      case 1: // middle
-        this.btns |= 0x02
-        break
-
-      case 2: // right
-        this.btns |= 0x04
-        break
-    }
-  }
-
-  onMouseUp (e) {
-    switch (e.data.originalEvent.button) {
-      case 0: // left
-        this.btns &= ~0x01
-        break
-
-      case 1: // middle
-        this.btns &= ~0x02
-        break
-
-      case 2: // right
-        this.btns &= ~0x04
-        break
-    }
-  }
-
-  onMouseMove (e) {
+  getEventInfo (e) {
     let video = this.video
     let renderer = video.monitor.renderer
     let margins_x = video.margins_x
@@ -87,12 +55,67 @@ MouseChip = class extends Chip {
     let x = Math.trunc(Math.min(size.x, Math.max(margins_x / 2, e.data.global.x)) / sprite.scale.x)
     let y = Math.trunc(Math.min(size.y, Math.max(margins_y / 2, e.data.global.y)) / sprite.scale.y)
 
+    return { x, y, button: e.data.originalEvent.button }
+  }
+
+  onMouseDown (e) {
+    let { x, y, button } = this.getEventInfo(e)
+
+    switch (button) {
+      case 0: // left
+        this.btns |= 0x01
+        break
+
+      case 1: // middle
+        this.btns |= 0x02
+        break
+
+      case 2: // right
+        this.btns |= 0x04
+        break
+    }
+
+    this.emit('mousedown', { x, y, button })
+
+    e.stopPropagation()
+  }
+
+  onMouseUp (e) {
+    let { x, y, button } = this.getEventInfo(e)
+
+    switch (button) {
+      case 0: // left
+        this.btns &= ~0x01
+        break
+
+      case 1: // middle
+        this.btns &= ~0x02
+        break
+
+      case 2: // right
+        this.btns &= ~0x04
+        break
+    }
+
+    this.emit('mouseup', { x, y, button })
+
+    e.stopPropagation()
+  }
+
+  onMouseMove (e) {
+    let { x, y, button } = this.getEventInfo(e)
+    let cursor = this.video.monitor.overlays.mouseCursor
+
     this.x = x
     this.y = y
 
     cursor.x = x
     cursor.y = y
 
+    this.emit('mousemove', { x, y, button })
+
     this.video.refresh(false)
+
+    e.stopPropagation()
   }
 }

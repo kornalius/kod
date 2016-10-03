@@ -1,5 +1,5 @@
 import { VM } from './vm/vm.js'
-import { OS } from '../os/os.js'
+import { OS } from './os/os.js'
 import { fs, p } from './utils.js'
 
 // let win = new BrowserWindow({ width: 800, height: 600 })

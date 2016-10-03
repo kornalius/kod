@@ -1,8 +1,10 @@
 import _ from 'lodash'
+import { EventEmitter2 } from 'eventemitter2'
 
-export class Chip {
+export class Chip extends EventEmitter2 {
 
   constructor (vm) {
+    super({ wildcard: true, delimiter: '.' })
     this.vm = vm
   }
 

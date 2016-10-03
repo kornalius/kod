@@ -1,13 +1,15 @@
 import _ from 'lodash'
+import { EventEmitter2 } from 'eventemitter2'
 
 export var _RDL_INACTIVE = 0
 export var _RDL_ACTIVE = 1
 
 export var Readline
 
-Readline = class {
+Readline = class extends EventEmitter2 {
 
   constructor (vm, options) {
+    super({ wildcard: true, delimiter: '.' })
     this.vm = vm
     this.txt = this.vm.chips.text
     this.kbd = this.vm.chips.keyboard
@@ -27,38 +29,38 @@ Readline = class {
     this.status = _RDL_ACTIVE
     this.set_text(text)
     this.set_cursor(cursor || this.length)
-    this.vm.on('keydown', this._keydownBound)
-    this.vm.emit('readline.start')
+    this.kbd.on('keydown', this._keydownBound)
+    this.emit('start')
     return this
   }
 
   end () {
     this.txt.println()
     this.status = _RDL_INACTIVE
-    this.vm.off('keydown', this._keydownBound)
-    this.vm.emit('readline.end', this.text)
+    this.kdb.off('keydown', this._keydownBound)
+    this.emit('end', this.text)
     return this
   }
 
-  keydown (keyboard) {
-    switch (keyboard.keyCode) {
-      case 8: // backspace
+  keydown (d) {
+    switch (d.key) {
+      case 'Backspace':
         let c = this.cursor
         this.delete_text(c - 1, 1).set_cursor(c - 1)
         break
 
-      case 46: // del
+      case 'Delete':
         this.delete_text(this.cursor, 1)
         break
 
-      case 9: // tab
+      case 'Tab':
         if (this.options.accept_tabs) {
           this.insert_text(this.cursor, _.repeat(' ', this.options.tab_width)).move_cursor(this.options.tab_width)
         }
         break
 
-      case 37: // left
-        if (keyboard.meta) {
+      case 'ArrowLeft':
+        if (d.meta) {
           this.move_start()
         }
         else {
@@ -66,8 +68,8 @@ Readline = class {
         }
         break
 
-      case 39: // right
-        if (keyboard.meta) {
+      case 'ArrowRight':
+        if (d.meta) {
           this.move_end()
         }
         else {
@@ -75,30 +77,33 @@ Readline = class {
         }
         break
 
-      case 36: // home
+      case 'Home':
         this.move_start()
         break
 
-      case 35: // end
+      case 'End':
         this.move_end()
         break
 
-      case 27: // esc
+      case 'Escape':
         this.set_text('')
         break
 
-      case 13: // enter
+      case 'Enter':
         this.end()
         break
+
+      default:
+        if (d.key.length === 1) {
+          let t = this.text.length
+          this.insert_text(this.cursor, d.key)
+          if (this.length > t) {
+            this.move_cursor(1)
+          }
+        }
     }
 
-    if (keyboard.key.length === 1) {
-      let t = this.text.length
-      this.insert_text(this.cursor, keyboard.key)
-      if (this.length > t) {
-        this.move_cursor(1)
-      }
-    }
+    this.emit('keydown', d)
   }
 
   get max_length () { return this.txt.width - this.start_pos.x + 1 }
@@ -107,6 +112,7 @@ Readline = class {
 
   set_cursor (c) {
     this.cursor = c
+    this.emit('move', c)
     return this.update_cursor()
   }
 
@@ -124,6 +130,7 @@ Readline = class {
 
   update () {
     this.txt.move_to(this.start_pos.x, this.start_pos.y).clear_eol().print(this.text)
+    this.emit('change', this.text)
     return this.update_cursor()
   }
 

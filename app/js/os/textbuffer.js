@@ -1,13 +1,14 @@
 import _ from 'lodash'
+import { EventEmitter2 } from 'eventemitter2'
 
 export var TextBuffer
 export var TextPoint
 export var TextRegion
 
-TextBuffer = class {
+TextBuffer = class extends EventEmitter2 {
 
-  constructor (owner, text, saveCursor, placeCursor) {
-    this._owner = owner
+  constructor (text, saveCursor, placeCursor) {
+    super({ wildcard: true, delimiter: '.' })
     this.lines = ['']
     this.setText(text.replace(/\r/g, ''))
     this.undoStack = []
@@ -155,6 +156,7 @@ TextBuffer = class {
       this.currentSteps.push({ type: 'change', row, oldText, newText: text })
     }
     this.emit('line:change', row, text)
+    return this
   }
 
   insertLine (row, text) {
@@ -163,11 +165,13 @@ TextBuffer = class {
       this.currentSteps.push({ type: 'insert', row, newText: text })
     }
     this.emit('line:insert', row, text)
+    return this
   }
 
   setText (text) {
     this.lines = text.split('\n')
     this.emit('reset')
+    return this
   }
 
   undo () {
@@ -196,6 +200,7 @@ TextBuffer = class {
       }
       this.noHistory = false
     }
+    return this
   }
 
   redo () {
@@ -222,6 +227,7 @@ TextBuffer = class {
       }
       this.noHistory = false
     }
+    return this
   }
 
   commitTransaction () {
@@ -232,6 +238,7 @@ TextBuffer = class {
       this.undoStack.push(this.currentSteps)
       this.currentSteps = []
     }
+    return this
   }
 
   insert (text, row, col) {
@@ -283,29 +290,33 @@ TextBuffer = class {
   }
 
   wordAt (row, col, wordRe) {
-    let match, ref
+    let ref
     if (_.isUndefined(wordRe)) {
       wordRe = '\\w+'
     }
     if (row instanceof TextPoint) {
-      ref = row, row = ref.row, col = ref.col
+      ref = row
+      row = ref.row
+      col = ref.col
     }
     let line = this.text(row)
     let regex = new RegExp('(' + wordRe + ')|(.)', 'g')
     let isNext = false
-    while (match = regex.exec(line)) {
+    let match = regex.exec(line)
+    while (match) {
       let text = match[1] || match[2]
       let index = match.index
       let length = text.length
-      if (isNext || (col <= index + length)) {
+      if (isNext || col <= index + length) {
         let region = new TextRegion(this.point(row, index), this.point(row, index + length))
-        region.isSolid = !!match[1]
+        region.isSolid = Boolean(match[1])
         if (!isNext && !region.isSolid && index + 1 !== line.length) {
           isNext = true
           continue
         }
         return region
       }
+      match = regex.exec(line)
     }
     return new TextRegion(this.point(row, col), this.point(row, col))
   }
@@ -329,7 +340,10 @@ TextBuffer = class {
   }
 
   deleteLines (beginRow, endRow) {
-    for (let i = j = ref = beginRow, ref1 = endRow; ref <= ref1 ? j <= ref1 : j >= ref1; i = ref <= ref1 ? ++j : --j) {
+    let ref = beginRow
+    let j = beginRow
+    let ref1 = endRow
+    for (let i = beginRow; ref <= ref1 ? j <= ref1 : j >= ref1; i = ref <= ref1 ? ++j : --j) {
       this.deleteLine(beginRow)
     }
   }
@@ -367,7 +381,7 @@ TextPoint = class {
 
   isBefore (point) {
     let sameRow = this.row === point.row
-    return this.row < point.row || (sameRow && this.col < point.col)
+    return this.row < point.row || sameRow && this.col < point.col
   }
 
   isAfter (point) { return !this.isBefore(point) && !this.equals(point) }
@@ -438,33 +452,33 @@ TextPoint = class {
   }
 
   moveLeft () {
-    if (this.isAtDocBegin()) {
-      return
-    }
-    this.idealCol = 0
-    if (this.col === 0) {
-      if (this.row) {
-        return this.moveTo(this.row - 1, this.buffer.lineLength(this.row - 1))
+    if (!this.isAtDocBegin()) {
+      this.idealCol = 0
+      if (this.col === 0) {
+        if (this.row) {
+          return this.moveTo(this.row - 1, this.buffer.lineLength(this.row - 1))
+        }
+      }
+      else {
+        return this.moveTo(null, this.col - 1)
       }
     }
-    else {
-      return this.moveTo(null, this.col - 1)
-    }
+    return this
   }
 
   moveRight () {
-    if (this.isAtDocEnd()) {
-      return
-    }
-    this.idealCol = 0
-    if (this.col === this.buffer.lineLength(this.row)) {
-      if (this.row < this.buffer.lineCount) {
-        return this.moveTo(this.row + 1, 0)
+    if (!this.isAtDocEnd()) {
+      this.idealCol = 0
+      if (this.col === this.buffer.lineLength(this.row)) {
+        if (this.row < this.buffer.lineCount) {
+          return this.moveTo(this.row + 1, 0)
+        }
+      }
+      else {
+        return this.moveTo(null, this.col + 1)
       }
     }
-    else {
-      return this.moveTo(null, this.col + 1)
-    }
+    return this
   }
 
   moveDown () {
@@ -486,7 +500,6 @@ TextPoint = class {
   }
 
   moveVertical (amount) {
-    let limit
     if (!this.idealCol || this.col >= this.idealCol) {
       this.idealCol = this.col
     }
@@ -495,46 +508,47 @@ TextPoint = class {
     if (this.idealCol > this.col) {
       newCol = this.idealCol
     }
-    if (this.col > (limit = this.buffer.lineLength(newRow))) {
+    let limit = this.buffer.lineLength(newRow)
+    if (this.col > limit) {
       newCol = limit
     }
     return this.moveTo(newRow, newCol)
   }
 
   moveToPrevWord () {
-    if (this.isAtDocBegin()) {
-      return
-    }
-    let carat = this.prevLoc()
-    let char = this.buffer.text(carat.row, carat.col)
-    while (!char || !/\w/.test(char)) {
-      carat = carat.prevLoc()
-      if (carat.isAtDocBegin()) {
-        return this.moveToDocBegin()
+    if (!this.isAtDocBegin()) {
+      let carat = this.prevLoc()
+      let char = this.buffer.text(carat.row, carat.col)
+      while (!char || !/\w/.test(char)) {
+        carat = carat.prevLoc()
+        if (carat.isAtDocBegin()) {
+          return this.moveToDocBegin()
+        }
+        char = this.buffer.text(carat.row, carat.col)
       }
-      char = this.buffer.text(carat.row, carat.col)
+      return this.moveTo(this.buffer.wordAt(carat).begin)
     }
-    return this.moveTo(this.buffer.wordAt(carat).begin)
+    return this
   }
 
   moveToNextWord () {
-    if (this.isAtDocEnd()) {
-      return
-    }
-    let carat = this.clone()
-    let char = this.buffer.text(carat.row, carat.col)
-    while (!char || !/\w/.test(char)) {
-      carat = carat.nextLoc()
-      if (carat.isAtDocEnd()) {
-        return this.moveToDocEnd()
-      }
-      if (carat.isAtLineEnd()) {
+    if (!this.isAtDocEnd()) {
+      let carat = this.clone()
+      let char = this.buffer.text(carat.row, carat.col)
+      while (!char || !/\w/.test(char)) {
         carat = carat.nextLoc()
+        if (carat.isAtDocEnd()) {
+          return this.moveToDocEnd()
+        }
+        if (carat.isAtLineEnd()) {
+          carat = carat.nextLoc()
+        }
+        char = this.buffer.text(carat.row, carat.col)
       }
-      char = this.buffer.text(carat.row, carat.col)
+      carat.moveRight()
+      return this.moveTo(this.buffer.wordAt(carat).end)
     }
-    carat.moveRight()
-    return this.moveTo(this.buffer.wordAt(carat).end)
+    return this
   }
 
   moveToDocBegin () { return this.moveTo(0, 0) }
@@ -560,53 +574,48 @@ TextPoint = class {
   overwrite (text) { return this.moveTo(this.buffer.overwrite(text, this.row, this.col)) }
 
   deleteBack () {
-    let col, line, ref, row
-    if (this.isAtDocBegin()) {
-      return
-    }
-    ref = this, row = ref.row, col = ref.col
-    this.moveLeft()
-    if (col === 0) {
-      this.buffer.joinLines(row - 1)
-    }
-    else {
-      line = this.buffer.text(row)
-      this.buffer.setLine(row, line.substr(0, col - 1) + line.substr(col))
+    if (!this.isAtDocBegin()) {
+      let row = this.row
+      let col = this.col
+      this.moveLeft()
+      if (col === 0) {
+        this.buffer.joinLines(row - 1)
+      }
+      else {
+        let line = this.buffer.text(row)
+        this.buffer.setLine(row, line.substr(0, col - 1) + line.substr(col))
+      }
     }
     return this
   }
 
   deleteForward () {
-    let line
-    if (this.isAtDocEnd()) {
-      return
-    }
-    if (this.isAtLineEnd()) {
-      this.buffer.joinLines(this.row)
-    }
-    else {
-      line = this.buffer.text(this.row)
-      this.buffer.setLine(this.row, line.substr(0, this.col) + line.substr(this.col + 1))
+    if (!this.isAtDocEnd()) {
+      if (this.isAtLineEnd()) {
+        this.buffer.joinLines(this.row)
+      }
+      else {
+        let line = this.buffer.text(this.row)
+        this.buffer.setLine(this.row, line.substr(0, this.col) + line.substr(this.col + 1))
+      }
     }
     return this
   }
 
   deleteWordBack () {
-    let colBegin, ptBegin, ptEnd, rowBegin
-    rowBegin = this.row
-    colBegin = this.col
+    let rowBegin = this.row
+    let colBegin = this.col
     this.moveToPrevWord()
-    ptBegin = this.buffer.point(this.row, this.col)
-    ptEnd = this.buffer.point(rowBegin, colBegin)
+    let ptBegin = this.buffer.point(this.row, this.col)
+    let ptEnd = this.buffer.point(rowBegin, colBegin)
     return (new TextRegion(ptBegin, ptEnd))['delete']()
   }
 
   deleteWordForward () {
-    let colBegin, ptBegin, rowBegin
-    rowBegin = this.row
-    colBegin = this.col
+    let rowBegin = this.row
+    let colBegin = this.col
     this.moveToNextWord()
-    ptBegin = this.buffer.point(rowBegin, colBegin)
+    let ptBegin = this.buffer.point(rowBegin, colBegin)
     return (new TextRegion(ptBegin, this))['delete']()
   }
 
@@ -615,6 +624,7 @@ TextPoint = class {
     return this.moveTo(this.row + 1, 0)
   }
 }
+
 
 TextRegion = class {
 
@@ -638,15 +648,19 @@ TextRegion = class {
   isEmpty () { return this.begin.equals(this.end) }
 
   text () {
-    let begin, end, i, lines, ref, ref1, ref2, row
-    ref = this.ordered(), begin = ref.begin, end = ref.end
+    let ref = this.ordered()
+    let begin = ref.begin
+    let end = ref.end
     if (begin.row === end.row) {
       return this.buffer.text(begin.row).substring(begin.col, end.col)
     }
-    lines = []
+    let lines = []
     lines.push(this.buffer.text(begin.row).substring(begin.col))
     if (end.row - 1 >= begin.row + 1) {
-      for (row = i = ref1 = begin.row + 1, ref2 = end.row - 1; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
+      let ref1 = begin.row + 1
+      let ref2 = end.row - 1
+      let row = ref1
+      for (let i = ref1; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
         lines.push(this.buffer.text(row))
       }
     }
@@ -655,10 +669,13 @@ TextRegion = class {
   }
 
   replaceWith (text) {
-    let afterText, beforeText, begin, delRow, end, i, lastLine, line, ref, ref1, ref2, row
-    ref = this.ordered(), begin = ref.begin, end = ref.end
-    line = this.buffer.text(begin.row)
-    beforeText = line.substr(0, begin.col)
+    let ref = this.ordered()
+    let begin = ref.begin
+    let end = ref.end
+    let line = this.buffer.text(begin.row)
+    let beforeText = line.substr(0, begin.col)
+    let afterText
+    let lastLine
     if (begin.row === end.row) {
       afterText = line.substr(end.col)
     }
@@ -667,14 +684,18 @@ TextRegion = class {
       afterText = lastLine.substr(end.col)
     }
     if (begin.row !== end.row) {
-      delRow = begin.row + 1
-      for (row = i = ref1 = delRow, ref2 = end.row; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
+      let delRow = begin.row + 1
+      let ref1 = delRow
+      let ref2 = end.row
+      let row = ref1
+      for (let i = ref1; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
         this.buffer.deleteLine(delRow)
       }
     }
     this.buffer.setLine(begin.row, beforeText)
     end.moveTo(this.buffer.insert(text, begin.row, begin.col))
     this.buffer.insert(afterText, end.row, end.col)
+    return this
   }
 
   delete () { return this.replaceWith('') }
@@ -684,63 +705,75 @@ TextRegion = class {
   selectRows (rowBegin, rowEnd) {
     let ref
     if (rowBegin > rowEnd) {
-      ref = [rowEnd, rowBegin], rowBegin = ref[0], rowEnd = ref[1]
+      ref = [rowEnd, rowBegin]
+      rowBegin = ref[0]
+      rowEnd = ref[1]
     }
     this.begin.moveTo(rowBegin, 0)
     return this.end.moveTo(rowEnd, this.buffer.lineLength(rowEnd))
   }
 
   shiftLinesUp () {
-    let begin, end, ref
-    ref = this.ordered(), begin = ref.begin, end = ref.end
+    let ref = this.ordered()
+    let begin = ref.begin
+    let end = ref.end
     if (!this.buffer.shiftLinesUp(begin.row, end.row)) {
-      return
+      return this
     }
     begin.moveUp()
     return end.moveUp()
   }
 
   shiftLinesDown () {
-    let begin, end, ref
-    ref = this.ordered(), begin = ref.begin, end = ref.end
+    let ref = this.ordered()
+    let begin = ref.begin
+    let end = ref.end
     if (!this.buffer.shiftLinesDown(begin.row, end.row)) {
-      return
+      return this.moveTo(null, null)
     }
     begin.moveDown()
     return end.moveDown()
   }
 
   indent (tabChars) {
-    let begin, end, i, ref, ref1, ref2, row
-    ref = this.ordered(), begin = ref.begin, end = ref.end
-    for (row = i = ref1 = begin.row, ref2 = end.row; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
+    let ref = this.ordered()
+    let begin = ref.begin
+    let end = ref.end
+    let ref1 = begin.row
+    let ref2 = end.row
+    let row = ref1
+    for (let i = ref1; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
       this.buffer.setLine(row, tabChars + this.buffer.text(row))
     }
     begin.moveTo(null, begin.col + tabChars.length)
-    end.moveTo(null, end.col + tabChars.length)
+    return end.moveTo(null, end.col + tabChars.length)
   }
 
   outdent (tabChars) {
-    let begin, beginCol, changed, end, endCol, i, line, oldLine, re, ref, ref1, ref2, row
-    ref = this.ordered(), begin = ref.begin, end = ref.end
-    re = new RegExp('^' + (tabChars.replace(/(.)/g, '[$1]?')))
-    changed = false
-    for (row = i = ref1 = begin.row, ref2 = end.row; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
-      oldLine = this.buffer.text(row)
-      line = oldLine.replace(re, '')
+    let ref = this.ordered()
+    let begin = ref.begin
+    let end = ref.end
+    let re = new RegExp('^' + tabChars.replace(/(.)/g, '[$1]?'))
+    let changed = false
+    let ref1 = begin.row
+    let ref2 = end.row
+    let row = ref1
+    for (let i = ref1; ref1 <= ref2 ? i <= ref2 : i >= ref2; row = ref1 <= ref2 ? ++i : --i) {
+      let oldLine = this.buffer.text(row)
+      let line = oldLine.replace(re, '')
       this.buffer.setLine(row, line)
       if (line !== oldLine) {
         changed = true
       }
     }
     if (!changed) {
-      return
+      return this
     }
-    beginCol = begin.col - tabChars.length
+    let beginCol = begin.col - tabChars.length
     if (beginCol < 0) {
       beginCol = 0
     }
-    endCol = end.col - tabChars.length
+    let endCol = end.col - tabChars.length
     if (endCol < 0) {
       endCol = 0
     }
@@ -749,6 +782,6 @@ TextRegion = class {
   }
 
   toString () {
-    return '[' + (this.begin.toString()) + ', ' + (this.end.toString()) + ']'
+    return '[' + this.begin.toString() + ', ' + this.end.toString() + ']'
   }
 }
