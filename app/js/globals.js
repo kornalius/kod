@@ -25,7 +25,7 @@ error = (instance, token, ...message) => {
       args.push(m)
     }
   }
-  console.error(...args, 'at', token.toString())
+  console.error(...args, token.toString())
   instance.errors++
   debugger;
   return null

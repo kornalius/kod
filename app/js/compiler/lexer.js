@@ -59,23 +59,20 @@ Token = class {
     if (this._type === 'math_assign' || this._type === 'logic_assign') {
       this._type = 'assign'
     }
+    else if (this._type === 'super') {
+      this._type = 'super'
+    }
     else if (this._type === 'id') {
       let r = this.value.match(this.lexer.publics_regexp) // public words
       if (r && r.length > 0) {
         this._publics = true
-      }
-      else {
-        let r = this.value.match(this.lexer.globals_regexp) // global words
-        if (r && r.length > 0) {
-          this._globals = true
-        }
       }
     }
     return this._type
   }
 
   toString () {
-    return _.template('"#{value}" (Line: #{line}, Column: #{column})')({ value: this.value, line: this.start.line, column: this.start.column })
+    return _.template('"#{value}" at #{path}(#{line}:#{column})')({ value: this.value, line: this.start.line, column: this.start.column, path: path.basename(this.lexer.path) })
   }
 
 }
@@ -87,7 +84,6 @@ Lexer = class {
     this.vm = vm
 
     this.publics_regexp = new RegExp('^(' + _.keys(this.vm.publics).join('|') + ')$', 'i')
-    this.globals_regexp = new RegExp('^(' + ['Math'].join('|') + ')$', 'i')
 
     this.token_types = {
       eol: /^[\r\n]|;/,
@@ -189,6 +185,18 @@ Lexer = class {
     return { token, offset, len }
   }
 
+  insertToken (t) {
+    let c = this.constants[t.value]
+    if (_.isArray(c)) {
+      for (let t of c) {
+        this.insertToken(t)
+      }
+    }
+    else {
+      this.tokens.push(t)
+    }
+  }
+
   next () {
     let { token, offset, len } = this.peek()
 
@@ -204,7 +212,7 @@ Lexer = class {
     if (token) {
       if (token.type === 'const') {
         let c = []
-        this.constants[token.value.toLowerCase()] = c
+        this.constants[token.value] = c
         this.offset = offset
         this.column += len + 1
         while (true) {
@@ -252,13 +260,7 @@ Lexer = class {
       }
 
       else {
-        let c = this.constants[token.value.toLowerCase()]
-        if (_.isArray(c)) {
-          this.tokens = this.tokens.concat(c)
-        }
-        else {
-          this.tokens.push(token)
-        }
+        this.insertToken(token)
         this.offset = offset
         this.column += len + 1
       }

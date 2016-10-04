@@ -18,12 +18,12 @@ Frames = class {
 
   end () { this.current = this.current.parent }
 
-  add (item_type, node) { return this.current.add(item_type, node) }
+  add (node, parent, item_type) { return this.current.add(node, parent, item_type) }
 
-  exists (name) {
+  exists (name, item_type) {
     let c = this.current
     while (c) {
-      let i = c.exists(name)
+      let i = c.exists(name, item_type)
       if (i) {
         return i
       }
@@ -33,21 +33,24 @@ Frames = class {
   }
 
   fn_exists (name) {
-    let i = this.exists(name)
-    return i && i.is_fn ? i : null
+    return this.exists(name, 'fn')
+  }
+
+  class_exists (name) {
+    return this.exists(name, 'class')
   }
 
   var_exists (name) {
-    let i = this.exists(name)
-    return i && i.is_var ? i : null
+    return this.exists(name, 'var')
   }
 
 }
 
 FrameItem = class {
 
-  constructor (frame, item_type, node) {
+  constructor (frame, parent, node, item_type) {
     this.frame = frame
+    this.parent = parent
     this.item_type = item_type
     this.node = node
   }
@@ -59,6 +62,8 @@ FrameItem = class {
   get type () { return this.node.type }
 
   get is_var () { return this.item_type === 'var' }
+
+  get is_class () { return this.item_type === 'class' }
 
   get is_fn () { return this.item_type === 'fn' }
 
@@ -83,23 +88,25 @@ Frame = class {
 
   get is_global () { return this.parent === null }
 
-  add (item_type, node) {
-    let i = new FrameItem(this, item_type, node)
+  add (node, parent, item_type) {
+    let i = new FrameItem(this, parent, node, item_type)
     this.items.push(i)
     node._global = this.is_global
     return i
   }
 
-  exists (name) { return _.find(this.items, { name }) }
+  exists (name, item_type) { return _.find(this.items, item_type ? { name, item_type } : { name }) }
 
   fn_exists (name) {
-    let i = this.exists(name)
-    return i && i.is_fn ? i : null
+    return this.exists(name, 'fn')
   }
 
   var_exists (name) {
-    let i = this.exists(name)
-    return i && i.is_var ? i : null
+    return this.exists(name, 'var')
+  }
+
+  class_exists (name) {
+    return this.exists(name, 'class')
   }
 
 }

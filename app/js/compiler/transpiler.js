@@ -41,10 +41,15 @@ Transpiler = class {
   }
 
   code_start () {
+    this.writeln('(function () {')
+    this.indent_level++
+    this.writeln('\'use strict\';')
     this.writeln()
   }
 
   code_end () {
+    this.writeln('})();')
+    this.indent_level--
     this.writeln()
   }
 

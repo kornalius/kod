@@ -39,20 +39,6 @@ VM = class extends EventEmitter2 {
     a[0] = 0xdeadbeef
     this.littleEndian = c[0] === 0xef
 
-    // this.PObject = {
-      // get: (target, prop) => {
-        // let value = target[prop]
-        // return !_.isFunction(value) ? () => value : value
-      // }
-    // }
-
-    // this.PArray = {
-      // get: (target, prop) => {
-        // let value = target[prop]
-        // return !_.isFunction(value) || prop === 'length' ? () => value : value
-      // }
-    // }
-
     this.publics = {}
 
     this.processes = []
@@ -183,7 +169,12 @@ VM = class extends EventEmitter2 {
 
   run (...args) {
     if (this.fn) {
-      this.fn.apply(this, args)
+      try {
+        this.fn(args)
+      }
+      catch (e) {
+        console.error(e)
+      }
     }
   }
 

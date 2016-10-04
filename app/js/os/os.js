@@ -17,6 +17,13 @@ OS = class {
       this.shell = new Shell(this)
     }
     this.shell.boot(cold)
+    if (!cold) {
+      this.autorun()
+    }
+  }
+
+  autorun () {
+
   }
 
   shut () {

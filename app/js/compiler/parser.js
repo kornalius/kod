@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { error } from '../globals.js'
 import { Token } from './lexer.js'
+import { Frames } from './frame.js'
 
 export var Node
 export var Parser
@@ -48,7 +49,7 @@ Parser = class {
     this.errors = 0
     this.offset = 0
     this.nodes = []
-    this.constants = {}
+    this.frames = new Frames()
     this.prev_frame = null
     this.in_class = false
     this.fn_level = 0
@@ -103,7 +104,9 @@ Parser = class {
 
   run () {
     this.reset()
+    this.frames.start('globals')
     let nodes = this.statements()
+    this.frames.end()
     this.nodes = nodes
     return nodes
   }
@@ -137,7 +140,16 @@ Parser = class {
     return node
   }
 
-  block (end, end_next = true) { return this.loop_while(this.statement, null, end, end_next, 'eol') }
+  block (end, end_next = true, block_type = null) {
+    if (block_type) {
+      this.frames.start(block_type)
+    }
+    let nodes = this.loop_while(this.statement, null, end, end_next, 'eol')
+    if (block_type) {
+      this.frames.end()
+    }
+    return nodes
+  }
 
   statements () { return this.block() }
 
@@ -150,7 +162,7 @@ Parser = class {
     else if (this.is('return')) { return this.return_statement() } // return from function
     else if (this.is(['break', 'continue'])) { return this.single() } // single statement
     else if (this.is('class')) { return this.class_statement() } // class statement
-    else if (this.is('id')) { return this.id_statement() } // function call
+    else if (this.is(['id', 'super'])) { return this.id_statement() } // function call
     else {
       error(this, this.token, 'syntax error')
       this.next()
@@ -158,7 +170,14 @@ Parser = class {
     return null
   }
 
-  id_statement () { return this.id_expr() }
+  id_statement (first = true) {
+    if (this.is('super')) {
+      return this.super_expr()
+    }
+    else {
+      return this.id_expr(first)
+    }
+  }
 
   var_statement () {
     let node = null
@@ -168,6 +187,7 @@ Parser = class {
       t.value = '='
       t._type = 'assign'
       node = new Node(this, t, { id: this.token, expr: null })
+      this.frames.add(this.token, null, 'var')
     }
     else {
       node = this.assign_statement()
@@ -182,12 +202,14 @@ Parser = class {
     this.next()
     if (this.is('fn_assign')) {
       node = this.fn_expr(id, true)
+      id._fn = true
     }
     else {
       node = new Node(this, this.token, { id })
       this.next()
       node.data.expr = this.expr()
     }
+    this.frames.add(id, null, id._fn ? 'fn' : 'var')
     return node
   }
 
@@ -239,7 +261,7 @@ Parser = class {
       this.next()
       step_expr = this.expr()
     }
-    let body = this.block('end', false)
+    let body = this.block('end', false, 'for')
     this.expect('end')
     return new Node(this, token, { v, min_expr, max_expr, step_expr, body })
   }
@@ -261,6 +283,26 @@ Parser = class {
     return new Node(this, token, { expr: expr_block, body })
   }
 
+  return_statement () {
+    let p = false
+    let end = 'eol|end|close_paren'
+    let node = new Node(this, this.token)
+    node.data.args = []
+    this.next()
+    if (this.is('open_paren')) {
+      p = true
+      end = 'close_paren'
+      this.next()
+    }
+    if (!p || !this.is('close_paren')) {
+      node.data.args = this.exprs(end, false)
+    }
+    if (p) {
+      this.expect('close_paren')
+    }
+    return node
+  }
+
   class_list () { return this.loop_while(this.single, ['id'], 'eol', true, 'comma') }
 
   class_statement () {
@@ -273,6 +315,7 @@ Parser = class {
       this.next()
       _extends = this.class_list()
     }
+    this.frames.add(id, null, 'class')
     this.in_class = true
     let body = this.block('end', false, 'class')
     this.in_class = false
@@ -307,6 +350,7 @@ Parser = class {
     else if (this.is('open_bracket')) { return this.array_expr() }
     else if (this.is('open_curly')) { return this.dict_expr() }
     else if (this.is(['this', 'this_field'])) { return this.this_expr() }
+    else if (this.is('super')) { return this.super_expr() }
     else if (this.is('new')) { return this.new_expr() }
     else if (this.is('id')) { return this.id_expr() }
     else {
@@ -336,26 +380,6 @@ Parser = class {
     return node
   }
 
-  return_statement () {
-    let p = false
-    let end = 'eol|end|close_paren'
-    let node = new Node(this, this.token)
-    node.data.args = []
-    this.next()
-    if (this.is('open_paren')) {
-      p = true
-      end = 'close_paren'
-      this.next()
-    }
-    if (!p || !this.is('close_paren')) {
-      node.data.args = this.exprs(end, false)
-    }
-    if (p) {
-      this.expect('close_paren')
-    }
-    return node
-  }
-
   single () {
     let node = new Node(this, this.token)
     this.next()
@@ -372,9 +396,18 @@ Parser = class {
       return this.next_expr_node()
     }
     else if (this.is('this_field')) {
-      return this.id_expr()
+      return this.id_expr(false)
     }
     return null
+  }
+
+  super_expr () {
+    if (!this.in_class) {
+      error(this, this.token, 'super cannot be used outside class definition')
+      this.next()
+      return null
+    }
+    return this.id_expr(false)
   }
 
   new_expr () {
@@ -382,6 +415,10 @@ Parser = class {
     this.next()
     let id = this.token
     this.next()
+    if (!this.frames.exists(id.value, 'class')) {
+      error(this, id, 'undeclared class')
+      return null
+    }
     let args = []
     if (this.is('open_paren')) {
       this.next()
@@ -422,9 +459,16 @@ Parser = class {
     return node
   }
 
-  fn_args_def () { return this.loop_while(this.single, ['id'], 'close_paren', false, 'comma') }
+  fn_arg () {
+    this.frames.add(this.token, null, 'var')
+    let node = new Node(this, this.token)
+    this.next()
+    return node
+  }
 
-  id_field_literal () {
+  fn_args_def () { return this.loop_while(this.fn_arg, ['id'], 'close_paren', false, 'comma') }
+
+  id_field () {
     let node = new Node(this, this.token)
     node.data.args = []
     node.token._type = 'id'
@@ -447,7 +491,11 @@ Parser = class {
     return node
   }
 
-  id_expr () {
+  id_expr (first = true) {
+    if (first && !this.token._publics && !this.frames.exists(this.token.value)) {
+      error(this, this.token, 'undeclared identifier')
+      return null
+    }
     let node = new Node(this, this.token)
     this.next()
     if (this.is('open_bracket')) {
@@ -468,7 +516,7 @@ Parser = class {
       if (!node.data.fields) {
         node.data.fields = []
       }
-      node.data.fields.push(this.id_field_literal())
+      node.data.fields.push(this.id_field())
       this.skip('comma')
     }
     return node
@@ -482,16 +530,16 @@ Parser = class {
       node._fn_level = this.fn_level++
     }
     this.next()
+    this.frames.start('fn')
     if (this.is('open_paren')) {
       this.next()
-      this.var_def_mode = true
       if (!this.is('close_paren')) {
         node.data.args = this.fn_args_def()
       }
-      this.var_def_mode = false
       this.expect('close_paren')
     }
     node.data.body = this.block('end', false)
+    this.frames.end()
     this.expect('end')
     if (statement) {
       this.fn_level--

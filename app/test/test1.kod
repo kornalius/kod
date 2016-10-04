@@ -2,7 +2,7 @@
 
 #MY_CONST 2 * (3 + 4)
 
-puts(true, false, PI)
+puts(true, false, PI, ceil(PI_2))
 
 let x
 let y = 10
@@ -78,3 +78,10 @@ end
 let c = new myClass2(10)
 
 puts(m_x)
+
+// console.info("Should not work!")
+
+// puts(Array)
+// puts(alert)
+// puts(console)
+// puts(window)
