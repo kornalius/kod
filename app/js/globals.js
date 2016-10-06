@@ -4,6 +4,8 @@ PIXI.Point.prototype.distance = target => {
   Math.sqrt((this.x - target.x) * (this.x - target.x) + (this.y - target.y) * (this.y - target.y))
 }
 
+export var runtime_errors
+export var io_errors
 export var error
 export var mixin
 export var delay
@@ -14,8 +16,37 @@ export var runtime_error
 export var io_error
 export var hex
 export var buffer_dump
+export var utoa
+export var atou
 
-error = (instance, token, ...message) => {
+runtime_errors = {
+  0x01: 'Volume already mounted',
+  0x02: 'Volume not mounted',
+  0x03: 'Volume not ready',
+  0x04: 'File already opened',
+  0x05: 'File is not opened',
+  0x06: 'Interrupt already exists',
+  0x07: 'Interrupt not found',
+  0x08: 'File not found',
+  0x09: 'Volume not found',
+  0x10: 'Not enough space',
+  0x11: 'Duplicate file',
+}
+
+io_errors = {
+  0x01: 'File not found',
+  0x02: 'Cannot open file',
+  0x03: 'Cannot close file',
+  0x04: 'Cannot lock file',
+  0x05: 'Cannot unlock file',
+  0x06: 'Invalid file id',
+  0x07: 'A floppy is already in the drive',
+  0x08: 'No floppy in drive',
+  0x09: 'Cannot delete file',
+  0x10: 'Drive is not spinning',
+}
+
+let normalizeMessages = (...message) => {
   let args = []
   for (let m of message) {
     if (_.isArray(m)) {
@@ -25,78 +56,25 @@ error = (instance, token, ...message) => {
       args.push(m)
     }
   }
+  return args
+}
+
+error = (instance, token, ...message) => {
+  let args = normalizeMessages(...message)
   console.error(...args, token.toString())
   instance.errors++
   debugger;
   return null
 }
 
-runtime_error = (vm, code) => {
-  let e = 'Unknown runtime error'
-  switch (code) {
-    case 0x01:
-      e = 'Out of memory'
-      break
-    case 0x02:
-      e = 'Stack underflow'
-      break
-    case 0x03:
-      e = 'Stack overflow'
-      break
-    case 0x04:
-      e = 'Invalid stack address'
-      break
-    case 0x05:
-      e = 'Stack address already assigned'
-      break
-    case 0x06:
-      e = 'Interrupt already exists'
-      break
-    case 0x07:
-      e = 'Interrupt not found'
-      break
-    case 0x08:
-      e = 'Address out of bounds'
-      break
-  }
-  console.error(e)
+runtime_error = (code, ...message) => {
+  let args = normalizeMessages(...message)
+  console.error(runtime_errors[code] || 'Unknown runtime error', ...args)
 }
 
-io_error = (vm, code) => {
-  let e = 'I/O runtime error'
-  switch (code) {
-    case 0x01:
-      e = 'File not found'
-      break
-    case 0x02:
-      e = 'Cannot open file'
-      break
-    case 0x03:
-      e = 'Cannot close file'
-      break
-    case 0x04:
-      e = 'Cannot lock file'
-      break
-    case 0x05:
-      e = 'Cannot unlock file'
-      break
-    case 0x06:
-      e = 'Invalid file id'
-      break
-    case 0x07:
-      e = 'A floppy is already in the drive'
-      break
-    case 0x08:
-      e = 'No floppy in drive'
-      break
-    case 0x09:
-      e = 'Cannot delete file'
-      break
-    case 0x10:
-      e = 'Drive is not spinning'
-      break
-  }
-  console.error(e)
+io_error = (code, ...message) => {
+  let args = normalizeMessages(...message)
+  console.error(io_errors[code] || 'I/O runtime error', ...args)
 }
 
 mixin = (proto, ...mixins) => {
@@ -113,7 +91,7 @@ delay = ms => {
   let t = performance.now()
   let c = t
   while (c - t <= ms) {
-    PIXI.ticker.shared.update(c)
+    // PIXI.ticker.shared.update(c)
     c = performance.now()
   }
 }
@@ -211,3 +189,7 @@ buffer_dump = (buffer, options = {}) => {
 
   return str
 }
+
+utoa = str => window.btoa(unescape(encodeURIComponent(str)))
+
+atou = str => decodeURIComponent(escape(window.atob(str)))

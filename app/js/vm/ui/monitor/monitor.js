@@ -14,6 +14,8 @@ Monitor = class {
 
     this.renderer = new PIXI.autoDetectRenderer(this.video.width * this.video.scale + this.video.margins_x, this.video.height * this.video.scale + this.video.margins_y, null, { })
     this.renderer.view.style.position = 'absolute'
+    this.renderer.view.style.cursor = 'none'
+    this.renderer.view.id = 'monitor'
 
     window.addEventListener('resize', this.resize.bind(this))
 
@@ -41,7 +43,7 @@ Monitor = class {
     }
 
     this.renderer.view.style.left = window.innerWidth * 0.5 - this.renderer.width * 0.5 + 'px'
-    this.renderer.view.style.top = window.innerHeight * 0.5 - this.renderer.height * 0.5 + 'px'
+    this.renderer.view.style.top = '8px'
 
     this.overlays.frame.x = this.video.margins_x / -4
     this.overlays.frame.y = this.video.margins_y / -4

@@ -85,3 +85,23 @@ puts(m_x)
 // puts(alert)
 // puts(console)
 // puts(window)
+
+let n = note({
+  :volume 0.1
+  :source "sawtooth"
+  :env {
+    :hold 10000
+    :attack 0.02
+    :release 0.5
+    :sustain 0.75
+    :decay 0.25
+  }
+  :filter {
+    :type "lowpass"
+    :frequency 600
+    :q 1
+  }
+})
+play(n, { :pitch "E4", :env { :hold 1 } })
+play(n, { :pitch "D2", :env { :hold 1 } })
+play(n, { :pitch "A4", :wait 1 :env { :hold 1 :sustain 1.2 } })

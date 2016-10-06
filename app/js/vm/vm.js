@@ -10,12 +10,14 @@ import { Interrupt } from './int.js'
 import { Debugger } from './dbg.js'
 
 import { CpuChip } from './chips/cpu.js'
+import { DriveChip } from './chips/drive.js'
 import { KeyboardChip } from './chips/keyboard.js'
 import { MouseChip } from './chips/mouse.js'
 import { PaletteChip } from './chips/palette.js'
 import { SpriteChip } from './chips/sprite.js'
 import { TextChip } from './chips/text.js'
 import { VideoChip } from './chips/video.js'
+import { SoundChip } from './chips/sound.js'
 
 import { EventEmitter2 } from 'eventemitter2'
 
@@ -39,7 +41,7 @@ VM = class extends EventEmitter2 {
     a[0] = 0xdeadbeef
     this.littleEndian = c[0] === 0xef
 
-    this.publics = {}
+    this.rom = {}
 
     this.processes = []
 
@@ -63,12 +65,14 @@ VM = class extends EventEmitter2 {
 
       this.chips = {}
       this.chips.cpu = new CpuChip(this)
+      this.chips.drive = new DriveChip(this, 'fda')
       this.chips.video = new VideoChip(this)
       this.chips.palette = new PaletteChip(this)
       this.chips.text = new TextChip(this)
       this.chips.sprite = new SpriteChip(this)
       this.chips.keyboard = new KeyboardChip(this)
       this.chips.mouse = new MouseChip(this)
+      this.chips.sound = new SoundChip(this)
     }
 
     for (let p of this.processes) {
@@ -83,16 +87,6 @@ VM = class extends EventEmitter2 {
   }
 
   restart (cold = false) {
-    for (let p of this.processes) {
-      if (_.isFunction(p.boot)) {
-        p.boot(cold)
-      }
-    }
-
-    for (let k in this.chips) {
-      this.chips[k].boot(cold)
-    }
-
     if (cold) {
       this.shut()
     }
@@ -133,7 +127,7 @@ VM = class extends EventEmitter2 {
 
   hlt (code) {
     if (code > 0) {
-      runtime_error(this, code)
+      runtime_error(code)
     }
     this.stop()
   }
@@ -174,6 +168,7 @@ VM = class extends EventEmitter2 {
       }
       catch (e) {
         console.error(e)
+        this.stop()
       }
     }
   }

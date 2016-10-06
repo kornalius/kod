@@ -419,7 +419,7 @@ Overlays = class {
     this.crt = new CrtOverlay(monitor, width, height)
     monitor.stage.addChild(this.crt.sprite)
 
-    let texture = PIXI.Texture.fromImage(path.join(__dirname, '../app/assets/imgs/crt.png'))
+    let texture = PIXI.Texture.fromImage(path.join(__dirname, 'assets/imgs/crt.png'))
     this.frame = new PIXI.Sprite(texture)
     monitor.stage.addChild(this.frame)
 

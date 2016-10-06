@@ -10,7 +10,7 @@ export class Chip extends EventEmitter2 {
 
   publicize (data) {
     let that = this
-    let publics = this.vm.publics
+    let rom = this.vm.rom
 
     let defineProperty = (desc, name, prop, readonly) => {
       let description = { enumerable: true }
@@ -23,7 +23,7 @@ export class Chip extends EventEmitter2 {
         description.get = () => that[prop]
         description.set = !readonly ? value => { that[prop] = value } : undefined
       }
-      Object.defineProperty(publics, name, description)
+      Object.defineProperty(rom, name, description)
     }
 
     for (let d of data) {
@@ -32,7 +32,7 @@ export class Chip extends EventEmitter2 {
 
       if (d.value) {
         if (_.isFunction(d.value)) {
-          publics[name] = d.value.bind(that)
+          rom[name] = d.value.bind(that)
           continue
         }
         else if (_.isString(d.value)) {
@@ -45,7 +45,7 @@ export class Chip extends EventEmitter2 {
         defineProperty(desc, name, prop, d.readonly)
       }
       else if (_.isFunction(that[prop])) {
-        publics[name] = that[prop].bind(that)
+        rom[name] = that[prop].bind(that)
       }
       else {
         let description = {
@@ -53,7 +53,7 @@ export class Chip extends EventEmitter2 {
           get: () => that[prop],
           set: !d.readonly ? value => { that[prop] = value } : undefined
         }
-        Object.defineProperty(publics, name, description)
+        Object.defineProperty(rom, name, description)
       }
     }
   }

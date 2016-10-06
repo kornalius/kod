@@ -270,6 +270,7 @@
       1,
       "never"
     ],
+    "require-yield": 1,
     "keyword-spacing": 2,
     "space-before-blocks": [
       1,

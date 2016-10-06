@@ -63,9 +63,9 @@ Token = class {
       this._type = 'super'
     }
     else if (this._type === 'id') {
-      let r = this.value.match(this.lexer.publics_regexp) // public words
+      let r = this.value.match(this.lexer.rom_regexp) // public words
       if (r && r.length > 0) {
-        this._publics = true
+        this._rom = true
       }
     }
     return this._type
@@ -83,7 +83,7 @@ Lexer = class {
   constructor (vm, path, text) {
     this.vm = vm
 
-    this.publics_regexp = new RegExp('^(' + _.keys(this.vm.publics).join('|') + ')$', 'i')
+    this.rom_regexp = new RegExp('^(' + _.keys(this.vm.rom).join('|') + ')$', 'i')
 
     this.token_types = {
       eol: /^[\r\n]|;/,

@@ -233,7 +233,7 @@ TextChip = class extends Chip {
 
   load_fnt () {
     let b = new BDF()
-    fs.readFile(path.join(__dirname, '../app/assets/fonts/' + this.chr_font + '.bdf'), 'utf8', (err, data) => {
+    fs.readFile(path.join(__dirname, 'assets/fonts/' + this.chr_font + '.bdf'), 'utf8', (err, data) => {
       if (!err) {
         b.load(data)
         // let points = b.meta.size.points

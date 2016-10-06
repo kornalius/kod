@@ -20,7 +20,7 @@ Node = class {
 
   get value () { return this.token_prop('value') }
 
-  get _publics () { return this.token_prop('_publics') }
+  get _rom () { return this.token_prop('_rom') }
 
   get type () { return this.token_prop('type') }
 
@@ -435,7 +435,7 @@ Parser = class {
     node.data.args = []
     this.expect('open_bracket')
     if (!this.is('close_bracket')) {
-      node.data.args = this.loop_while(this.expr, null, 'close_bracket', false, 'comma')
+      node.data.args = this.loop_while(this.expr, null, 'close_bracket', false, 'comma|eol')
     }
     this.expect('close_bracket')
     return node
@@ -446,7 +446,7 @@ Parser = class {
     node.data.def = []
     this.expect('open_curly')
     if (!this.is('close_curly')) {
-      node.data.def = this.loop_while(this.key_literal, ['key'], 'close_curly', false, 'comma')
+      node.data.def = this.loop_while(this.key_literal, ['key'], 'close_curly', false, 'comma|eol')
     }
     this.expect('close_curly')
     return node
@@ -466,7 +466,7 @@ Parser = class {
     return node
   }
 
-  fn_args_def () { return this.loop_while(this.fn_arg, ['id'], 'close_paren', false, 'comma') }
+  fn_args_def () { return this.loop_while(this.fn_arg, ['id'], 'close_paren', false, 'comma|eol') }
 
   id_field () {
     let node = new Node(this, this.token)
@@ -492,7 +492,7 @@ Parser = class {
   }
 
   id_expr (first = true) {
-    if (first && !this.token._publics && !this.frames.exists(this.token.value)) {
+    if (first && !this.token._rom && !this.frames.exists(this.token.value)) {
       error(this, this.token, 'undeclared identifier')
       return null
     }

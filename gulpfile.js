@@ -35,7 +35,7 @@ gulp.task('build-client-bundles', (done) => {
         .on('error', onError)
         .pipe(source(entry))
         .on('error', onError)
-        .pipe(rename({ dirname: 'js', }))
+        .pipe(rename({ dirname: 'js' }))
         .on('error', onError)
         .pipe(gulp.dest('./build'))
     })
@@ -76,7 +76,19 @@ gulp.task('build-pixi-js', (done) => {
   let tasks = [
     gulp.src('./node_modules/pixi.js/bin/pixi.min.js')
       .on('error', onError)
-      .pipe(rename({ dirname: 'js', }))
+      .pipe(rename({ dirname: 'js' }))
+      .on('error', onError)
+      .pipe(gulp.dest('./build'))
+  ]
+
+  es.merge(tasks).on('end', done)
+})
+
+gulp.task('build-wad-js', (done) => {
+  let tasks = [
+    gulp.src('./node_modules/web-audio-daw/build/wad.min.js')
+      .on('error', onError)
+      .pipe(rename({ dirname: 'js' }))
       .on('error', onError)
       .pipe(gulp.dest('./build'))
   ]
@@ -87,9 +99,9 @@ gulp.task('build-pixi-js', (done) => {
 gulp.task('build-client-tests', (done) => {
   let tasks = [
     gulp.src('./app/test/**/*')
-      .pipe(rename({ dirname: 'test', }))
-      .on('error', onError)
-      .pipe(gulp.dest('./build'))
+//      .pipe(rename({ dirname: 'test' }))
+//      .on('error', onError)
+      .pipe(gulp.dest('./build/test'))
   ]
 
   es.merge(tasks).on('end', done)
@@ -98,9 +110,9 @@ gulp.task('build-client-tests', (done) => {
 gulp.task('build-client-assets', (done) => {
   let tasks = [
     gulp.src('./app/assets/**/*')
-      .pipe(rename({ dirname: 'assets', }))
-      .on('error', onError)
-      .pipe(gulp.dest('./build'))
+//      .pipe(rename({ dirname: 'assets' }))
+//      .on('error', onError)
+      .pipe(gulp.dest('./build/assets'))
   ]
 
   es.merge(tasks).on('end', done)
@@ -125,11 +137,11 @@ gulp.task('build-server', (done) => {
 })
 
 
-gulp.task('build', ['build-pixi-js', 'build-client', 'build-server'])
+gulp.task('build', ['build-pixi-js', 'build-wad-js', 'build-client', 'build-server'])
 
 
 gulp.task('watch-client', () => {
-  gulp.watch(['./app/**/*', './user/**/*'], { debounceDelay: 500 }, (e) => {
+  gulp.watch('./app/**/*', { debounceDelay: 500 }, (e) => {
     gulp.start('build-client', () => {
       console.log('Reloading Electron')
       electron.reload()

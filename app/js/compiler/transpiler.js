@@ -110,7 +110,7 @@ Transpiler = class {
         tmpl: '#{field}#{public}#{fn}(#{args})',
         dat: {
           field: node._field ? '.' : '',
-          public: node._publics ? '_vm.publics.' : '',
+          public: node._rom ? '_vm.rom.' : '',
           fn: node.value,
           args: this.expr(d.args, ', '),
         }
@@ -325,7 +325,7 @@ Transpiler = class {
             tmpl: '#{field}#{public}#{value}#{fields}',
             dat: {
               field: node._field ? '.' : '',
-              public: node._publics ? '_vm.publics.' : '',
+              public: node._rom ? '_vm.rom.' : '',
               value: node.value,
               fields: d.fields ? this.expr(d.fields, '') : '',
             }
