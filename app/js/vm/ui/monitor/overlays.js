@@ -350,19 +350,21 @@ MouseCursorOverlay = class extends Overlay {
     this.offset_y = offset ? offset.y : 0
     this.x = 0
     this.y = 0
+    _vm.chips.sprite.spritesheet.make_cursor()
     this.create()
   }
 
   draw () {
     super.draw()
-    let image_data = this.context.getImageData(0, 0, this.width, this.height)
-    let pixels = image_data.data
-    let len = pixels.length
-    // let c = this.monitor.pal.to_rgba(1)
-    for (let i = 0; i < len; i += 4) {
-      pixels.set([200, 100, 50, 200], i)
-    }
-    this.context.putImageData(image_data, 0, 0)
+    _vm.chips.sprite.spritesheet.draw(0, this.x, this.y)
+    _vm.chips.video.refresh()
+    // let image_data = this.context.getImageData(0, 0, this.width, this.height)
+    // let pixels = image_data.data
+    // let len = pixels.length
+    // for (let i = 0; i < len; i += 4) {
+    //   pixels.set([200, 100, 50, 200], i)
+    // }
+    // this.context.putImageData(image_data, 0, 0)
   }
 
   tick (t, delay) {
@@ -373,8 +375,9 @@ MouseCursorOverlay = class extends Overlay {
   }
 
   update () {
-    this.sprite.x = (this.x + this.offset_x) * this.sprite.scale.x + this.monitor.video.offset_x
-    this.sprite.y = (this.y + this.offset_y) * this.sprite.scale.y + this.monitor.video.offset_y
+    // this.sprite.x = (this.x + this.offset_x) * this.sprite.scale.x + this.monitor.video.offset_x
+    // this.sprite.y = (this.y + this.offset_y) * this.sprite.scale.y + this.monitor.video.offset_y
+    this.draw()
     super.update()
   }
 }

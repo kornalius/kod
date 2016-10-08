@@ -37,7 +37,7 @@ Readline = class extends EventEmitter2 {
   end () {
     this.txt.println()
     this.status = _RDL_INACTIVE
-    this.kdb.off('keydown', this._keydownBound)
+    this.kbd.off('keydown', this._keydownBound)
     this.emit('end', this.text)
     return this
   }

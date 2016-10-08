@@ -1,22 +1,52 @@
 import { Chip } from '../chip.js'
+import { Sprite, SpriteSheet } from '../sprite.js'
 
 export var SpriteChip
 
 SpriteChip = class extends Chip {
 
-  constructor (vm, count, width, height) {
+  constructor (vm) {
     super(vm)
+    this.vm.chips.sprite = this
+    this.video = this.vm.chips.video
+    this.sprites = []
+    this.ordered_sprites = []
+    this.spritesheet = new SpriteSheet()
+  }
 
-    this.list = []
+  get width () { return this.spritesheet.frame_width }
 
-    this.count = Math.min(16, count || 16)
-    this.width = Math.min(16, width || 16)
-    this.height = Math.min(16, height || 16)
-    this.size = this.width * this.height
+  get height () { return this.spritesheet.frame_height }
+
+  update_zindexes () {
+    this.ordered_sprites = _.sortBy(this.sprites, 'z')
+  }
+
+  zindex_min () {
+    let r = Number.MAX_VALUE
+    for (let s of this.sprites) {
+      if (s.z < r) {
+        r = s.z
+      }
+    }
+    return r
+  }
+
+  zindex_max () {
+    let r = 0
+    for (let s of this.sprites) {
+      if (s.z > r) {
+        r = s.z
+      }
+    }
+    return r
   }
 
   tick (t, delta) {
     super.tick(t, delta)
+    for (let s of this.sprites) {
+      s.tick(t, delta)
+    }
     if (this.force_update) {
       this.draw()
       this.force_update = false
@@ -24,9 +54,7 @@ SpriteChip = class extends Chip {
   }
 
   reset () {
-    this.video = this.vm.chips.video
     this.force_update = false
-    this.data = new Uint8Array(this.size)
     this.clear()
     super.reset()
   }
@@ -37,62 +65,20 @@ SpriteChip = class extends Chip {
   }
 
   clear () {
-    this.data.fill(0)
-    this.list = []
+    this.sprites = []
+    this.ordered_sprites = []
     this.refresh()
   }
 
-  find (name) { return _.find(this.list, { name }) }
-
-  add (name, frame, x, y, z) {
-    this.list.push({ name, frame, x, y, z, index: Number.MAX_VALUE })
-  }
-
-  del (name) {
-    let s = this.find(name)
-    if (s) {
-      this.list.splice(s.index, 1)
-    }
-  }
-
-  move (name, x, y, z) {
-    let s = this.find(name)
-    if (s) {
-      s.x = x
-      s.y = y
-      if (z) {
-        s.z = z
-      }
-      this.refresh()
-    }
-  }
-
-  move_by (name, x, y) {
-    let s = this.find(name)
-    if (s) {
-      s.x = x
-      s.y = y
-      this.refresh()
-    }
+  add (f, x, y, z) {
+    let s = new Sprite(f, x, y, z)
+    this.sprites.push(s)
+    return s
   }
 
   draw () {
-    let sw = this.width
-    let sh = this.height
-    let sl = this.list
-    let ss = this.size
-
-    let mem = this.data
-
-    for (let s of _.sortBy(this.list, 'z')) {
-      let ptr = sl + s.frame * ss
-      for (let by = 0; by < sh; by++) {
-        let pi = (s.y + by) * sw + s.x
-        for (let bx = 0; bx < sw; bx++) {
-          this.video.pixel(pi++, mem[ptr++])
-        }
-      }
+    for (let s of this.ordered_sprites) {
+      s.draw()
     }
   }
-
 }

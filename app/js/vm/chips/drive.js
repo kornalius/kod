@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import { Chip } from '../chip.js'
 import { Sound } from '../sound.js'
-import { runtime_error, delay } from '../../globals.js'
-import { basePath, Disk } from '../kfs.js'
+import { DEBUG_MODE, runtime_error, delay } from '../../globals.js'
+import { basePath, Disk } from '../fs.js'
 import { fs, path } from '../../utils.js'
 import { DriveUI } from '../ui/drive.js'
 
@@ -99,10 +99,12 @@ DriveChip = class extends Chip {
     let sound = _op ? _op.sound : null
 
     if (sound) {
-      for (let i = 0; i < Math.min(100, size || 1); i++) {
-        this.sound.play(sound, {}, _op.random_sound)
-        let t = _.random(min_time, max_time)
-        delay(t)
+      if (!DEBUG_MODE) {
+        for (let i = 0; i < Math.min(100, size || 1); i++) {
+          this.sound.play(sound, {}, _op.random_sound)
+          let t = _.random(min_time, max_time)
+          delay(t)
+        }
       }
     }
   }

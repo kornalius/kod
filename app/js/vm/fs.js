@@ -14,8 +14,6 @@ File = class {
   constructor (disk, parent, d) {
     this.disk = disk
     this.parent = parent || null
-    this.fid = 0
-    this.ptr = 0
     this.deserialize(d)
   }
 
@@ -42,6 +40,8 @@ File = class {
 
   get path () { return this.disk.path + '/' + this.name + this.ext }
 
+  get drive () { return this.disk.drive }
+
   get data () { return this._data }
 
   set data (value) {
@@ -52,8 +52,6 @@ File = class {
 
   get size () { return this.data.length }
 
-  get opened () { return this.fid > 0 }
-
   check_size (size) {
     if (this.disk.avail_size + size < this.disk.total_size) {
       runtime_error(0x10, this.toString())
@@ -62,89 +60,25 @@ File = class {
     return true
   }
 
-  get ready () {
-    if (!this.opened) {
-      runtime_error(0x04, this.toString())
-      return false
-    }
+  rm () {
+    delete this.parent.catalog[this.key_name]
+    this.disk.save()
     return true
   }
 
-  open () {
-    if (this.ready) {
-      this.fid = _.uniqueId()
-      this.ptr = 0
+  read () {
+    this.drive.read(this.size / 1024)
+    return this.data
+  }
+
+  write (data) {
+    if (this.check_size(data.length)) {
+      this.data = data
+      this.drive.write(data.length / 1024)
+      this.disk.save(false, false)
       return true
     }
     return false
-  }
-
-  close () {
-    if (this.ready) {
-      this.fid = 0
-      this.ptr = 0
-      return true
-    }
-    return false
-  }
-
-  rm () {
-    if (this.ready) {
-      delete this.parent.catalog[this.key_name]
-      this.disk.save()
-      return true
-    }
-    return false
-  }
-
-  pos () {
-    if (this.ready) {
-      return this.ptr
-    }
-    return -1
-  }
-
-  seek (pos) {
-    if (this.ready) {
-      if (pos === -1) {
-        pos = this.size - 1
-      }
-      this.ptr = Math.max(0, Math.min(this.size - 1, pos))
-      return this.ptr
-    }
-    return -1
-  }
-
-  get bof () { return this.ptr === 0 }
-
-  get eof () { return this.ptr === this.size - 1 }
-
-  read (len) {
-    if (this.ready) {
-      if (this.ptr + len > this.size - 1) {
-        len = this.size - this.ptr
-      }
-      let r = this.data.substring(this.ptr, len)
-      this.ptr += len
-      return r
-    }
-    return null
-  }
-
-  write (data, len) {
-    if (this.ready && this.check_size(len)) {
-      this.data = this.data.substr(0, this.ptr) + data + this.data.substr(this.ptr + 1)
-      this.disk.save()
-      return len
-    }
-    return -1
-  }
-
-  append (data, len) {
-    if (this.seek(-1)) {
-      return this.write(data, len)
-    }
-    return -1
   }
 
   toString () { return this.path }
@@ -199,43 +133,32 @@ Folder = class extends File {
 
   get size () { return _.reduce(this.content, (sz, f) => sz + f.size) }
 
-  get opened () { return true }
-
   create (name) {
-    if (this.ready) {
-      if (this.exists(name)) {
-        runtime_error(0x11, this.toString())
-        return null
-      }
-      let f = new File(this.disk, this.parent, { name })
-      this.content[this.disk.key_name(name)] = f
-      this.disk.save()
-      return f
+    if (this.exists(name)) {
+      runtime_error(0x11, this.toString())
+      return null
     }
-    return null
+    let f = new File(this.disk, this.parent, { name })
+    this.content[this.disk.key_name(name)] = f
+    this.disk.save()
+    return f
   }
 
   mkdir (name) {
-    if (this.ready) {
-      if (this.exists(name)) {
-        runtime_error(0x11, this.toString())
-        return null
-      }
-      let f = new Folder(this.disk, this.parent, { name })
-      this.content[this.disk.key_name(name)] = f
-      this.disk.save()
-      return f
+    if (this.exists(name)) {
+      runtime_error(0x11, this.toString())
+      return null
     }
-    return null
+    let f = new Folder(this.disk, this.parent, { name })
+    this.content[this.disk.key_name(name)] = f
+    this.disk.save()
+    return f
   }
 
   rm () {
-    if (this.ready) {
-      delete this.content[this.key_name]
-      this.disk.save()
-      return true
-    }
-    return false
+    delete this.content[this.key_name]
+    this.disk.save()
+    return true
   }
 
   exists (name) { return !_.isUndefined(this.file(name)) }
@@ -353,7 +276,7 @@ Disk = class {
       root: { name: '/', content: {} },
     }
     if (sfx) {
-      this.drive.write(10)
+      this.drive.write(50)
     }
     this.save(sfx, gfx)
     return true

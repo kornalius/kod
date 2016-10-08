@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { pixel_to_char, char_to_pixel } from '../../globals.js'
 
 import { Chip } from '../chip.js'
 
@@ -87,6 +88,7 @@ PaletteChip = class extends Chip {
   num_rgba (rgba) {
     if (this.vm.littleEndian) {
       return {
+        a: rgba >> 24 & 0xFF,
         b: rgba >> 16 & 0xFF,
         g: rgba >> 8 & 0xFF,
         r: rgba & 0xFF,
@@ -94,9 +96,10 @@ PaletteChip = class extends Chip {
     }
     else {
       return {
-        r: rgba >> 16 & 0xFF,
-        g: rgba >> 8 & 0xFF,
-        b: rgba & 0xFF,
+        r: rgba >> 24 & 0xFF,
+        g: rgba >> 16 & 0xFF,
+        b: rgba >> 8 & 0xFF,
+        a: rgba & 0xFF,
       }
     }
   }
@@ -127,4 +130,7 @@ PaletteChip = class extends Chip {
     return -1
   }
 
+  to_char (c) { return pixel_to_char(c) }
+
+  from_char (c) { return char_to_pixel(c) }
 }

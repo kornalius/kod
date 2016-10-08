@@ -4,6 +4,8 @@ PIXI.Point.prototype.distance = target => {
   Math.sqrt((this.x - target.x) * (this.x - target.x) + (this.y - target.y) * (this.y - target.y))
 }
 
+export const DEBUG_MODE = true
+
 export var runtime_errors
 export var io_errors
 export var error
@@ -11,6 +13,10 @@ export var mixin
 export var delay
 export var buffer_to_string_hex
 export var hex_string_to_buffer
+export var pixel_to_char
+export var char_to_pixel
+export var pixels_to_string
+export var string_to_pixels
 export var string_buffer
 export var runtime_error
 export var io_error
@@ -108,7 +114,7 @@ hex_string_to_buffer = str => {
   let i = 0
   let x = 0
   let len = str.length
-  let b = new Buffer(Math.trunc(len / 2))
+  let b = new Uint8Array(Math.trunc(len / 2))
   while (i < len) { b[x++] = parseInt(str.substr(i += 2, 2), 16) }
   return b
 }
@@ -117,6 +123,27 @@ string_buffer = (str, len = 0) => {
   len = len || str.length
   var b = new Buffer(len)
   b.write(str, 0, str.length, 'ascii')
+  return b
+}
+
+pixel_to_char = c => String.fromCharCode(c + 63)
+
+char_to_pixel = c => c.charCodeAt(0) - 63
+
+pixels_to_string = b => {
+  let len = b.length
+  let i = 0
+  let s = ''
+  while (i < len) { s += pixel_to_char(b[i++]) }
+  return s
+}
+
+string_to_pixels = str => {
+  let i = 0
+  let x = 0
+  let len = str.length
+  let b = new Uint8Array(Math.trunc(len / 2))
+  while (i < len) { b[x++] = char_to_pixel(str[i++]) }
   return b
 }
 

@@ -170,6 +170,8 @@ Lexer = class {
       offset++
     }
 
+    let old_offset = offset
+
     let line = this.line
     let column = this.column
     for (let k in this.token_types) {
@@ -181,6 +183,9 @@ Lexer = class {
         offset += len
         break
       }
+    }
+    if (offset === old_offset) {
+      this.offset = offset + 1
     }
     return { token, offset, len }
   }

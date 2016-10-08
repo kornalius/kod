@@ -68,6 +68,8 @@ SoundChip = class extends Chip {
       { name: 'play', value: this.sound.play.bind(this.sound) },
       { name: 'stop', value: this.sound.stop.bind(this.sound) },
       { name: 'note', value: this.sound.note.bind(this.sound) },
+      { name: 'note_to_str', value: this.sound.note_to_str.bind(this.sound) },
+      { name: 'str_to_note', value: this.sound.str_to_note.bind(this.sound) },
       { name: 'note_poly', value: this.sound.poly.bind(this.sound) },
       { name: 'poly_add', value: this.sound.poly_add.bind(this.sound) },
       { name: 'poly_rem', value: this.sound.poly_remove.bind(this.sound) },
@@ -88,5 +90,4 @@ SoundChip = class extends Chip {
     super.shut()
     this.sound.shut()
   }
-
 }

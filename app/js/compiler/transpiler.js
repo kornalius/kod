@@ -322,12 +322,13 @@ Transpiler = class {
         }
         else if (node.is('id')) {
           t = {
-            tmpl: '#{field}#{public}#{value}#{fields}',
+            tmpl: '#{field}#{public}#{value}#{fields}#{assign}',
             dat: {
               field: node._field ? '.' : '',
               public: node._rom ? '_vm.rom.' : '',
               value: node.value,
               fields: d.fields ? this.expr(d.fields, '') : '',
+              assign: d.assign ? ' = ' + this.expr(d.assign, '') : '',
             }
           }
         }

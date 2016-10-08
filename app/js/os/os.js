@@ -23,7 +23,9 @@ OS = class {
   }
 
   autorun () {
-
+    let dsk = this.vm.chips.drive.disk
+    if (dsk) {
+    }
   }
 
   shut () {

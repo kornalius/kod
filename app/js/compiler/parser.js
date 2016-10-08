@@ -463,6 +463,10 @@ Parser = class {
     this.frames.add(this.token, null, 'var')
     let node = new Node(this, this.token)
     this.next()
+    if (this.is('assign')) {
+      this.next()
+      node.data.assign = this.expr()
+    }
     return node
   }
 
