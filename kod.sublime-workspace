@@ -4,6 +4,70 @@
 		"selected_items":
 		[
 			[
+				"global",
+				"globals.js\t(fs.js)"
+			],
+			[
+				"A",
+				"Ab2\t(wad.js)"
+			],
+			[
+				"abs",
+				"absolute\t(monitor.js)"
+			],
+			[
+				"des",
+				"deserialize"
+			],
+			[
+				"runtim",
+				"runtime_error"
+			],
+			[
+				"vol",
+				"volume"
+			],
+			[
+				"Ev",
+				"EventEmitter2\t(vm.js)"
+			],
+			[
+				"charA",
+				"charCodeAt"
+			],
+			[
+				"setTime",
+				"setTimeout\tjsWindow"
+			],
+			[
+				"publics",
+				"publics_regexp\t(token.js)"
+			],
+			[
+				"tokn",
+				"tokenizer"
+			],
+			[
+				"toke",
+				"tokenizer.js\t(vm.js)"
+			],
+			[
+				"arg",
+				"arguments"
+			],
+			[
+				"UI",
+				"Uint8Array\t(vm.js)"
+			],
+			[
+				"buffer",
+				"buffer_dump"
+			],
+			[
+				"stat",
+				"statements"
+			],
+			[
 				"token",
 				"tokenizer"
 			],
@@ -128,47 +192,43 @@
 	"buffers":
 	[
 		{
-			"file": "src/compiler/lexer/lexer.js",
+			"file": "app/js/globals.js",
 			"settings":
 			{
-				"buffer_size": 1401,
+				"buffer_size": 4905,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/compiler/lexer/statement.js",
+			"file": "app/js/vm/ui/monitor/overlays.js",
 			"settings":
 			{
-				"buffer_size": 1572,
+				"buffer_size": 12207,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/compiler/lexer/variable.js",
+			"file": "app/js/vm/sprite.js",
 			"settings":
 			{
-				"buffer_size": 523,
+				"buffer_size": 4303,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/compiler/lexer/expr.js",
+			"file": "app/test/test1.kod",
 			"settings":
 			{
-				"buffer_size": 2099,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/compiler/tokenizer/token.js",
-			"settings":
-			{
-				"buffer_size": 1006,
+				"buffer_size": 1661,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		}
 	],
-	"build_system": "",
+	"build_system": "Packages/PackageDev/Support/Convert to ....sublime-build",
 	"build_system_choices":
 	[
 		[
@@ -192,6 +252,42 @@
 				[
 					"Packages/PackageDev/Support/Convert to ....sublime-build",
 					"YAML (Default Style)"
+				]
+			],
+			[
+				"Packages/PackageDev/Support/Convert to ....sublime-build",
+				"Property List"
+			]
+		],
+		[
+			[
+				[
+					"Packages/PackageDev/Support/Convert to ....sublime-build",
+					""
+				],
+				[
+					"Packages/PackageDev/Support/Convert to ....sublime-build",
+					"JSON"
+				],
+				[
+					"Packages/PackageDev/Support/Convert to ....sublime-build",
+					"Property List"
+				],
+				[
+					"Packages/PackageDev/Support/Convert to ....sublime-build",
+					"YAML (Block Style)"
+				],
+				[
+					"Packages/PackageDev/Support/Convert to ....sublime-build",
+					"YAML (Default Style)"
+				],
+				[
+					"Packages/User/Gulp.sublime-build",
+					""
+				],
+				[
+					"Packages/User/npm_start.sublime-build",
+					""
 				]
 			],
 			[
@@ -220,9 +316,105 @@
 	"command_palette":
 	{
 		"height": 400.0,
-		"last_filter": "snak",
+		"last_filter": "split",
 		"selected_items":
 		[
+			[
+				"split",
+				"MultiEditUtils: Split selection"
+			],
+			[
+				"quo",
+				"String Utilities: Convert Single Quotes To Double"
+			],
+			[
+				"came",
+				"Convert Case: camelCase"
+			],
+			[
+				"rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"read",
+				"ReadmePlease"
+			],
+			[
+				"intel",
+				"SublimeCodeIntel: Enable Live Autocompletion for Current Language"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"packa",
+				"Package Control: Add Channel"
+			],
+			[
+				"quot",
+				"String Utilities: Convert Double Quotes To Single"
+			],
+			[
+				"tojs",
+				"CoffeeToJs: Convert selection"
+			],
+			[
+				"quote",
+				"String Utilities: Convert Double Quotes To Single"
+			],
+			[
+				"q",
+				"Quick Find"
+			],
+			[
+				"disa",
+				"Package Control: Disable Package"
+			],
+			[
+				"debug",
+				"SublimeLinter: Disable Debug Mode"
+			],
+			[
+				"ins",
+				"Package Control: Install Package"
+			],
+			[
+				"disab",
+				"Package Control: Disable Package"
+			],
+			[
+				"enab",
+				"Package Control: Enable Package"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"",
+				"Character Table: Toggle Digraph Mode"
+			],
+			[
+				"char",
+				"Character Table: Lookup Unicode Character"
+			],
+			[
+				"line",
+				"Permute Lines: Unique"
+			],
+			[
+				"low",
+				"Convert Case: Lower Case"
+			],
 			[
 				"snak",
 				"Convert Case: snake_case"
@@ -230,10 +422,6 @@
 			[
 				"das",
 				"Convert Case: dash-case"
-			],
-			[
-				"came",
-				"Convert Case: camelCase"
 			],
 			[
 				"case",
@@ -248,20 +436,12 @@
 				"ChangeQuotes"
 			],
 			[
-				"q",
-				"Quick Find"
-			],
-			[
 				"linter sett",
 				"Preferences: SublimeLinter Settings – User"
 			],
 			[
 				"alig",
 				"AlignTab"
-			],
-			[
-				"",
-				"AutoBackups: Open file backup"
 			],
 			[
 				"backu",
@@ -289,141 +469,149 @@
 	"expanded_folders":
 	[
 		"/Volumes/hd2/sources/kod",
-		"/Volumes/hd2/sources/kod/src",
-		"/Volumes/hd2/sources/kod/src/compiler",
-		"/Volumes/hd2/sources/kod/src/compiler/lexer",
-		"/Volumes/hd2/sources/kod/src/compiler/tokenizer"
+		"/Volumes/hd2/sources/kod/app",
+		"/Volumes/hd2/sources/kod/app/js",
+		"/Volumes/hd2/sources/kod/app/js/compiler",
+		"/Volumes/hd2/sources/kod/app/js/os",
+		"/Volumes/hd2/sources/kod/app/js/vm",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui/monitor",
+		"/Volumes/hd2/sources/kod/app/test",
+		"/Volumes/hd2/sources/kod/build/assets",
+		"/Volumes/hd2/sources/kod/build/assets/imgs",
+		"/Volumes/hd2/sources/kod/user"
 	],
 	"file_history":
 	[
-		"/Volumes/hd2/sources/kod/src/compiler/tokenizer/tokenizer.js",
-		"/Volumes/hd2/sources/kod/src/compiler/lexer/astnode.js",
-		"/Volumes/hd2/sources/kod/src/compiler/lexer/expr.js",
-		"/Volumes/hd2/sources/kod/src/compiler/tokenizer/token.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/single.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/math.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/string.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/sub_expr.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/simple_expr.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/factor.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/term.js",
-		"/Volumes/hd2/sources/kod/src/compiler/ast/number.js",
-		"/Volumes/hd2/sources/kod/src/compiler/globals.js",
-		"/Volumes/hd2/sources/kod/src/compiler/token.js",
-		"/Volumes/hd2/sources/kod/bower.json",
-		"/Volumes/hd2/sources/kod/package.json",
-		"/Volumes/hd2/sources/kod/src/compiler/astnode.js",
-		"/Volumes/hd2/sources/kod/src/compiler/lexer.js",
-		"/Volumes/hd2/sources/kod/src/compiler/tokenizer.js",
-		"/Volumes/hd2/sources/kod/src/main.js",
-		"/Volumes/hd2/sources/kod/index.html",
-		"/Volumes/hd2/sources/kod/style/colors.css",
-		"/Volumes/hd2/sources/kod/style/main.css",
-		"/Volumes/hd2/sources/kod/html/main.html",
-		"/Volumes/hd2/sources/kod/webpack.config.js",
-		"/Volumes/hd2/sources/kod/.htmlhintrc",
-		"/Volumes/hd2/sources/kod/.gitignore",
-		"/Volumes/hd2/sources/kod/.eslintrc",
-		"/Volumes/hd2/sources/kod/.eslintignore",
-		"/Volumes/hd2/sources/kod/.csslintrc",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/video.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/palette.js",
+		"/Volumes/hd2/sources/kod/app/js/os/os.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/transpiler.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/parser.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/mouse.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/sound.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/drive.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/sprite.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/lexer.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/fs.js",
+		"/Volumes/hd2/sources/kod/node_modules/web-audio-daw/build/wad.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui/drive.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/sound.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui/monitor/overlays.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui/monitor/monitor.js",
+		"/Volumes/hd2/sources/kod/node_modules/pixi.js/src/core/math/shapes/Rectangle.js",
+		"/Volumes/hd2/sources/kod/app/js/os/readline.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui/floppy.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/vm.js",
+		"/Volumes/hd2/sources/kod/app/styles/default.scss",
+		"/Volumes/hd2/sources/kod/app/js/vm/ui/screen.js",
+		"/Volumes/hd2/sources/kod/node_modules/pixi.js/bin/pixi.js",
+		"/Volumes/hd2/sources/kod/node_modules/performance-now/lib/performance-now.js",
+		"/Volumes/hd2/sources/kod/app/js/globals.js",
+		"/Volumes/hd2/sources/kod/node_modules/pixi.js/src/core/ticker/Ticker.js",
+		"/Volumes/hd2/sources/kod/app/js/utils.js",
+		"/Volumes/hd2/sources/kod/app/js/index.js",
+		"/Volumes/hd2/sources/kod/node_modules/regenerator-runtime/runtime-module.js",
+		"/Volumes/hd2/sources/kod/node_modules/regenerator-runtime/path.js",
+		"/Volumes/hd2/sources/kod/node_modules/regenerator-runtime/runtime.js",
+		"/Volumes/hd2/sources/kod/node_modules/regenerator-runtime/package.json",
+		"/Volumes/hd2/sources/kod/node_modules/babel-runtime/regenerator/index.js",
+		"/Volumes/hd2/sources/kod/node_modules/babel-runtime/README.md",
+		"/Volumes/hd2/sources/kod/node_modules/babel-register/README.md",
 		"/Volumes/hd2/sources/kod/.babelrc",
-		"/Volumes/hd2/sources/DX32/src/interpreter/struct.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/sound.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/cpu.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/stackbuffer.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/memorymanager.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/io/floppy.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/io/entry.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/sound.js",
-		"/Volumes/hd2/sources/DX32/src/compiler/codegen.js",
-		"/Volumes/hd2/sources/DX32/src/globals.js",
-		"/Volumes/hd2/sources/DX32/src/compiler/frame.js",
-		"/Volumes/hd2/sources/DX32/src/compiler/tokenizer.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/video/text.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/vm.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/stack.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/video/video.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/video/sprite.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/video/palette.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/video.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/drive.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/mouse.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/keyboard.js",
-		"/Volumes/hd2/sources/DX32/test/test1.x32",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ports/network.js",
-		"/Volumes/hd2/sources/DX32/src/compiler/assembler.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/io/block.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/port.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/io/dos.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ui/monitor/overlays.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/memory.js",
-		"/Volumes/hd2/sources/DX32/sublime/Syntaxes/DX32.YAML-tmLanguage",
-		"/Volumes/hd2/sources/DX32/sublime/Syntaxes/DX32.tmLanguage",
-		"/Volumes/hd2/sources/DX32/src/main.js",
-		"/Volumes/hd2/sources/DX32/src/compiler/label.js",
-		"/Volumes/hd2/sources/termos/components/text-edit-view.coffee",
-		"/Volumes/hd2/sources/swim/user/plugins/swim-terminal/termbuffer.coffee",
-		"/Volumes/hd2/sources/swim/user/plugins/swim-terminal/cursor.coffee",
-		"/Volumes/hd2/sources/DX32/src/interpreter/ui/monitor/monitor.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/stackstruct.js",
-		"/Volumes/hd2/sources/DX32/src/stack.js",
-		"/Volumes/hd2/sources/DX32/src/memory.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/video/overlays.js",
-		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/pygments/all/pygments/lexers/c_cpp.py",
-		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/pygments/all/pygments/lexers/basic.py",
+		"/Volumes/hd2/sources/kod/node_modules/babel-runtime/core-js.js",
+		"/Volumes/hd2/sources/kod/node_modules/babel-preset-es2017/package.json",
+		"/Volumes/hd2/sources/kod/node_modules/babel-plugin-syntax-async-functions/README.md",
+		"/Volumes/hd2/sources/kod/.eslintrc",
+		"/Volumes/hd2/sources/kod/gulpfile.js",
+		"/Volumes/hd2/sources/kod/node_modules/web-audio-daw/README.md",
+		"/Volumes/hd2/sources/kod/build/assets/sounds/disk_spin.wav",
+		"/Volumes/hd2/sources/kod/app/index.html",
+		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/IntelliDocs.sublime-settings",
+		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/IntelliDocs/IntelliDocs.sublime-settings",
+		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/IntelliDocs/Default (OSX).sublime-keymap",
+		"/Volumes/hd2/sources/kod/node_modules/electron-download/readme.md",
+		"/Volumes/hd2/sources/kod/node_modules/electron-prebuilt/dist/Electron.app/Contents/Resources/electron.asar",
+		"/Volumes/hd2/sources/kod/node_modules/electron-prebuilt/appveyor.yml",
+		"/Volumes/hd2/sources/kod/user/globals.kod",
+		"/Volumes/hd2/sources/kod/app/test/test1.kod",
+		"/Volumes/hd2/sources/kod/user/disk1.fdk",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/text.js",
+		"/Volumes/hd2/sources/kod/app/js/os/shell.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/int.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chip.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/cpu.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/frame.js",
+		"/Volumes/hd2/sources/kod/app/js/os/globals.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/proxies.js",
+		"/Volumes/hd2/sources/kod/app/js/vm/chips/keyboard.js",
+		"/Volumes/hd2/sources/kod/app/js/os/textcursor.js",
+		"/Volumes/hd2/sources/kod/app/js/os/textbuffer.js",
+		"/Volumes/hd2/sources/kod/node_modules/eventemitter2/README.md",
+		"/Volumes/hd2/sources/kod/app/os/textbuffer.js",
+		"/Volumes/hd2/sources/kod/app/os/textcursor.js",
+		"/Volumes/hd2/sources/kod/app/os/globals.js",
+		"/Volumes/hd2/sources/kod/node_modules/eventemitter2/eventemitter2.d.ts",
+		"/Volumes/hd2/sources/kod/package.json",
+		"/Volumes/hd2/sources/kod/app/assets/fonts/4x6.bdf",
+		"/Volumes/hd2/sources/kod/app/styles/index.scss",
+		"/Volumes/hd2/sources/kod/sublime/Syntaxes/kod.YAML-tmLanguage",
+		"/Volumes/hd2/sources/kod/sublime/Preferences/Symbol List Labels.tmPreferences",
+		"/Volumes/hd2/sources/kod/node_modules/eslint/lib/rules/prefer-const.js",
+		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/nearley.tmLanguage",
 		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/Afterglow-twilight (SL).tmTheme",
-		"/Volumes/hd2/sources/DX32/sublime/DX32.sublime-settings",
-		"/Volumes/hd2/sources/DX32/sublime/Preferences/Symbol List Labels.tmPreferences",
-		"/Volumes/hd2/sources/DX32/sublime/Preferences/Symbol List Macro.tmPreferences",
-		"/Volumes/hd2/sources/DX32/sublime/Preferences/Symbol List Namespace.tmPreferences",
-		"/Volumes/hd2/sources/DX32/sublime/Preferences/Symbol List Pseudocommand.tmPreferences",
-		"/Volumes/hd2/sources/DX32/sublime/Preferences/Symbol List Function.tmPreferences",
-		"/Volumes/hd2/sources/DX32/sublime/Preferences/Comments.tmPreferences",
-		"/Volumes/hd2/sources/DX32/sublime/package-metadata.json",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/DX32.breakpoint.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/messages.json",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/DX32.if.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/DX32.for.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/DX32.function.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/DX32.if-else.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/KickAssembler(C64) macro.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/if.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/for.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/if-else.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/function.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/breakpoint.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/KickAssembler(C64) cosinus.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Snippets/KickAssembler(C64) breakpoint.sublime-snippet",
-		"/Volumes/hd2/sources/DX32/sublime/Messages/1.1.0.txt",
-		"/Volumes/hd2/sources/DX32/sublime/Messages/0.7.0.txt",
-		"/Volumes/hd2/sources/DX32/sublime/Key Maps/Default (Linux).sublime-keymap",
-		"/Volumes/hd2/sources/DX32/sublime/README.md",
-		"/Volumes/hd2/sources/DX32/sublime/KickAssembler (C64).sublime-settings",
-		"/Volumes/hd2/sources/DX32/sublime/.gitignore",
-		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/JavaScript.sublime-settings",
-		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/Markdown Extended.sublime-settings",
-		"/Users/alain/ziptemp/BetterZip Temporary Folder.FkzbRw/BetterZip Temporary Folder.IidOZf/Context.sublime-menu",
-		"/Volumes/hd2/sources/DX32/build/pixi.js",
-		"/Volumes/hd2/sources/DX32/node_modules/hexy/hexy.js",
-		"/Volumes/hd2/sources/DX32/node_modules/.bin/hexy",
-		"/Volumes/hd2/sources/DX32/build/bundle.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/interrupt.js",
-		"/Volumes/hd2/sources/DX32/style/main.css",
-		"/Volumes/hd2/sources/DX32/index.html",
-		"/Volumes/hd2/sources/DX32/src/assembler.js",
-		"/Volumes/hd2/sources/DX32/src/interpreter/dict.js",
-		"/Volumes/hd2/sources/DX32/src/vm.js",
-		"/Volumes/hd2/sources/DX32/src/tokenizer.js",
-		"/Volumes/hd2/sources/DX32/src/memorymanager.js",
-		"/Volumes/hd2/sources/DX32/src/debugger.js",
-		"/Volumes/hd2/sources/DX32/src/ports/cpu.js",
-		"/Volumes/hd2/sources/DX32/html/main.html",
-		"/Volumes/hd2/sources/DX32/src/port.js",
-		"/Volumes/hd2/sources/DX32/src/ports/network.js",
-		"/Volumes/hd2/sources/DX32/src/ports/mouse.js",
-		"/Volumes/hd2/sources/DX32/src/ports/keyboard.js",
-		"/Volumes/hd2/sources/DX32/src/ports/video.js",
-		"/Volumes/hd2/sources/DX32/src/dict.js"
+		"/Volumes/hd2/sources/kod/sublime/Preferences/Symbol List Pseudocommand.tmPreferences",
+		"/Volumes/hd2/sources/kod/sublime/Preferences/Symbol List Namespace.tmPreferences",
+		"/Volumes/hd2/sources/kod/sublime/Preferences/Symbol List Function.tmPreferences",
+		"/Volumes/hd2/sources/kod/sublime/Preferences/Comments.tmPreferences",
+		"/Volumes/hd2/sources/kod/sublime/Preferences/Symbol List Macro.tmPreferences",
+		"/Volumes/hd2/sources/kod/sublime/README.md",
+		"/Volumes/hd2/sources/kod/sublime/package-metadata.json",
+		"/Volumes/hd2/sources/kod/sublime/kod.sublime-settings",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/kod.while.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/kod.if.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/kod.if-else.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/kod.for.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/kod.breakpoint.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/kod.function.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Snippets/DX32.for.sublime-snippet",
+		"/Volumes/hd2/sources/kod/sublime/Syntaxes/kod.tmLanguage",
+		"/Users/alain/Library/Application Support/Sublime Text 3/Packages/User/Sublimerge.tmTheme",
+		"/Volumes/hd2/sources/kod/node_modules/electron-connect/README.md",
+		"/Volumes/hd2/sources/kod/node_modules/electron-connect/lib/server.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/node.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/token.js",
+		"/Volumes/hd2/sources/kod/app/js/compiler/syntax.js",
+		"/Volumes/hd2/sources/kod/build/index.js",
+		"/Volumes/hd2/sources/kod/build/index.html",
+		"/Volumes/hd2/sources/kod/app/js/compiler/tokenizer/tokenizer.js",
+		"/Volumes/hd2/sources/vision/app/js/index.js",
+		"/Volumes/hd2/sources/vision/app/js/utils.js",
+		"/Volumes/hd2/sources/kod/src/compiler/transpiler.js",
+		"/Volumes/hd2/sources/kod/src/compiler/lexer/lexer.js",
+		"/Volumes/hd2/sources/kod/src/test/test1.kod",
+		"/Volumes/hd2/sources/kod/src/compiler/tokenizer/tokenizer.js",
+		"/Volumes/hd2/sources/kod/src/index.js",
+		"/Volumes/hd2/sources/vision/gulpfile.js",
+		"/Volumes/hd2/sources/kod/build/js/index.js",
+		"/Volumes/hd2/sources/vision/package.json",
+		"/Volumes/hd2/sources/vision/.babelrc",
+		"/Volumes/hd2/sources/kod/README.md",
+		"/Volumes/hd2/sources/vision/README.md",
+		"/Volumes/hd2/sources/kod/src/window-state.js",
+		"/Volumes/hd2/sources/swim/app/plugins.coffee",
+		"/Volumes/hd2/sources/swim/package.json",
+		"/Volumes/hd2/sources/swim/index.js",
+		"/Volumes/hd2/sources/swim/app/app.coffee",
+		"/Volumes/hd2/sources/swim/app/index.js",
+		"/Volumes/hd2/sources/termos/index.html",
+		"/Volumes/hd2/sources/swim/index.html",
+		"/Volumes/hd2/sources/vision/app/index.html",
+		"/Volumes/hd2/sources/kod/bower.json",
+		"/Volumes/hd2/sources/kod/index.html",
+		"/Volumes/hd2/sources/kod/webpack.config.js"
 	],
 	"find":
 	{
@@ -444,134 +632,134 @@
 		"case_sensitive": false,
 		"find_history":
 		[
-			"true_node",
-			"offset",
-			"astnode",
-			"ASTNode",
-			"export var ",
-			"DivideNode",
-			"SubtractNode",
-			"AddNode",
-			"Expr",
-			"TermExpr",
-			"FactorExpr",
-			"ConditionalExpr",
-			"JunctionExpr",
-			"SubExpr",
-			"SimpleExpr",
-			"Expr",
-			"TermExprNode",
-			"SimpleExprNode",
-			"JunctionNode",
-			"TermNode",
-			"FactorNode",
-			"ConditionalNode",
-			"conditional",
-			"term",
-			"next",
-			"column",
-			"token_types",
-			"tokenTypes",
-			"line",
-			"_start",
-			"_type",
-			"type",
-			"_length",
-			"offset",
-			"tokenType",
-			"{ ",
-			"c",
-			"types",
-			"Bracket",
-			"hasNext",
-			"parent",
-			"start",
-			"type",
-			"'for'",
-			"alloc",
+			"FAST_OP",
+			"arg",
+			"fid",
+			"open",
+			"o",
+			"@",
+			".",
+			"('@@......@@@.....@",
+			"o",
+			"@",
+			".",
+			"@",
+			".",
+			"@",
+			",.",
+			"@",
+			"o",
+			"'o'",
+			"X",
+			"ptr",
+			"kfs",
+			"width",
+			"MAX_INT",
+			"note_to_str",
+			"note_to_string",
+			"string_to_note",
+			"pitches",
+			"pitchesArray",
+			"pitch",
+			"notes_table",
+			"'sine'",
+			"video",
+			"string_to_buffer",
+			"buffer_to_string",
+			"string_buffer",
+			"buffer_to_string",
+			"width",
+			"update_orders",
+			"video",
+			"spritesheet",
+			"list",
+			"f",
+			"_calc_frames",
+			"frame_index",
+			"spritesheet",
+			"s",
+			"pixels",
+			"Sprite",
+			"Sound",
+			"sound",
+			"Sound",
+			"kdb",
+			"play",
+			"'comma",
+			"'",
+			"skip",
+			"'comma",
+			"'",
+			" '",
+			" = ",
+			" =",
+			"DriveUI",
+			".cursor",
+			"img",
+			"width",
+			"queue",
+			"width",
+			"base_image",
+			"Monitor",
+			"stage",
+			"Monitor",
+			"tick",
+			"tickBound",
+			"requestAnimationFrame",
+			"draw",
+			"'tick",
+			"on('tick",
+			"TICK",
+			"reser",
+			"yield",
+			"gene",
+			"mount",
+			".then",
 			"size",
-			"alloc",
-			"vm.alloc",
-			"var_alloc",
-			"defaults.type",
-			"alloc",
-			".alloc",
-			".st(",
-			"sbc",
-			".st(",
-			"st",
-			"ld",
-			"st",
-			"ld",
-			".ld(",
-			"stb",
-			"st",
-			"ld",
-			"ldw",
-			"ldb",
-			".ldb",
-			"prettyBytes",
-			"'\"' + defaults.type + '\"', ','",
-			"prettyBytes",
-			"\\'",
-			".ld",
-			"comma_array",
-			"define_to_data_type",
-			"alloc",
-			"comma_array",
-			"comma",
-			"var_alloc",
-			"alloc_",
-			"type",
-			"data_type_to_define",
-			"data_type_to_alloc",
-			"define_to_data_type",
-			"_type",
-			", true",
-			".st",
-			"sbc",
-			"ldb",
-			"rgba ",
-			"color",
-			"uint32",
-			"rgba_to_num",
+			"crt.png",
+			"max",
+			"size",
+			"delay",
+			"check_floppy",
+			"spin",
+			"snd_name",
+			"build-pixi-js",
+			"path",
+			"snd_",
+			"meta",
+			"json",
+			"catalog",
+			"loaded",
+			"_disk",
+			"fs",
+			".fs",
+			"drive",
+			"fid",
+			"_content",
+			"key_name",
+			"is_mounted",
+			".data.meta",
+			"this.ready ? ",
+			"data.root",
+			"deserialize",
+			"unserialize",
+			"0x01",
+			"key_name",
+			"save(",
+			"File",
+			"file",
+			"d",
+			"catalog",
+			"flush",
+			"unserialize",
+			"save",
+			"deserialize",
+			"load",
+			"content",
+			"catalog",
 			"c",
-			"txt_array",
-			"txt_view",
-			"fnt_view",
-			"vid_force_flip",
-			"spr_view",
-			"pal_view",
-			"vid_view",
-			"vid_force_flip",
-			"txt_refresh",
-			"txt_force_update",
-			"txt_refresh",
-			"spr_refresh",
-			"txt_refresh",
-			"vid_refresh",
-			"txt_refresh",
-			"txt_force_update",
-			"vid_force_",
-			"_vm.",
-			"mem_init",
-			"struct_init",
-			"struct_size",
-			"mem_buffer_sizes",
-			"mem_type_size",
-			"_bc",
-			"return",
-			"mem_data_view",
-			"mem_view",
-			".mem_view",
-			"mem_data_view",
-			"StructEntry",
-			"mem_init(",
-			"mem_buffer",
-			"mem_init(",
-			"struct_init",
-			"StructEntry",
-			"buf"
+			"data",
+			"files"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -579,6 +767,13 @@
 		"regex": false,
 		"replace_history":
 		[
+			"65",
+			"64",
+			"63",
+			"64",
+			"63",
+			"o",
+			"",
 			"mem_view",
 			".mem_array",
 			"$1",
@@ -593,24 +788,24 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/compiler/lexer/lexer.js",
+					"file": "app/js/globals.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1401,
+						"buffer_size": 4905,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								701,
-								701
+								182,
+								182
 							]
 						],
 						"settings":
@@ -618,149 +813,9 @@
 							"apply_syntax_touched": true,
 							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
 							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tabs_extra_last_activated": 1473955338.68,
+							"tab_size": 2,
+							"tabs_extra_last_activated": 1475873045.83,
 							"tabs_extra_last_activated_sheet_index": 0,
-							"tabs_extra_spawned": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 243.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/compiler/lexer/statement.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1572,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1175,
-								1175
-							]
-						],
-						"settings":
-						{
-							"apply_syntax_touched": true,
-							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
-							"open_with_edit": true,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"tabs_extra_last_activated": 1473960868.6,
-							"tabs_extra_last_activated_sheet_index": 1,
-							"tabs_extra_spawned": true,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 990.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/compiler/lexer/variable.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 523,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								241,
-								241
-							]
-						],
-						"settings":
-						{
-							"apply_syntax_touched": true,
-							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
-							"open_with_edit": true,
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"tabs_extra_last_activated": 1473955755.63,
-							"tabs_extra_last_activated_sheet_index": 2,
-							"tabs_extra_spawned": true,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/compiler/lexer/expr.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2099,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1497,
-								1497
-							]
-						],
-						"settings":
-						{
-							"apply_syntax_touched": true,
-							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"tabs_extra_last_activated": 1473954235.3,
-							"tabs_extra_last_activated_sheet_index": 3,
-							"tabs_extra_spawned": true,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1300.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "src/compiler/tokenizer/token.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1006,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								400,
-								400
-							]
-						],
-						"settings":
-						{
-							"apply_syntax_touched": true,
-							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"tab_size": 2,
-							"tabs_extra_last_activated": 1473956357.56,
-							"tabs_extra_last_activated_sheet_index": 4,
 							"tabs_extra_moving":
 							[
 								4,
@@ -770,10 +825,121 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2564.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "app/js/vm/ui/monitor/overlays.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12207,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8806,
+								8806
+							]
+						],
+						"settings":
+						{
+							"apply_syntax_touched": true,
+							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"tabs_extra_last_activated": 1475873777.19,
+							"tabs_extra_last_activated_sheet_index": 1,
+							"tabs_extra_spawned": true,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 8029.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "app/js/vm/sprite.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4303,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3794,
+								3794
+							]
+						],
+						"settings":
+						{
+							"apply_syntax_touched": true,
+							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
+							"open_with_edit": true,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"tabs_extra_last_activated": 1475932111.45,
+							"tabs_extra_last_activated_sheet_index": 2,
+							"tabs_extra_moving":
+							[
+								4,
+								0
+							],
+							"tabs_extra_spawned": true,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3355.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "app/test/test1.kod",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1661,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								757,
+								757
+							]
+						],
+						"settings":
+						{
+							"apply_syntax_touched": true,
+							"color_scheme": "Packages/User/Color Highlighter/themes/Afterglow-twilight (SL).tmTheme",
+							"syntax": "Packages/User/kod.tmLanguage",
+							"tab_size": 2,
+							"tabs_extra_last_activated": 1475872162.68,
+							"tabs_extra_last_activated_sheet_index": 3,
+							"tabs_extra_spawned": true,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1276.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -810,6 +976,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.doc":
+	{
+		"height": 0.0
+	},
 	"output.exec":
 	{
 		"height": 293.0
@@ -822,15 +992,19 @@
 	{
 		"height": 252.0
 	},
+	"output.unicode_preview":
+	{
+		"height": 189.0
+	},
 	"output.unsaved_changes":
 	{
 		"height": 140.0
 	},
-	"pinned_build_system": "Packages/User/npm_start.sublime-build",
+	"pinned_build_system": "",
 	"project": "kod.sublime-project",
 	"replace":
 	{
-		"height": 58.0
+		"height": 74.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -840,33 +1014,77 @@
 		"selected_items":
 		[
 			[
-				"hexy",
-				"node_modules/hexy/hexy.js"
+				"wad",
+				"node_modules/web-audio-daw/build/wad.js"
+			],
+			[
+				"piximath",
+				"node_modules/pixi.js/src/core/math/shapes/Rectangle.js"
+			],
+			[
+				"perform",
+				"node_modules/performance-now/lib/performance-now.js"
+			],
+			[
+				"perf",
+				"node_modules/performance-now/lib/performance-now.js"
 			],
 			[
 				"pixi",
-				"build/pixi.js"
+				"node_modules/pixi.js/bin/pixi.js"
+			],
+			[
+				"gulp",
+				"gulpfile.js"
+			],
+			[
+				"webaudio",
+				"node_modules/web-audio-daw/README.md"
+			],
+			[
+				"eventemitter2",
+				"node_modules/eventemitter2/README.md"
+			],
+			[
+				"eventemitt",
+				"node_modules/eventemitter2/README.md"
+			],
+			[
+				"eventemitte",
+				"node_modules/eventemitter2/eventemitter2.d.ts"
+			],
+			[
+				"electronconnect",
+				"node_modules/electron-connect/README.md"
+			],
+			[
+				"brwohex",
+				"node_modules/browser-hex/hexdump.js"
+			],
+			[
+				"hexy",
+				"node_modules/hexy/hexy.js"
 			]
 		],
 		"width": 0.0
 	},
 	"select_project":
 	{
-		"height": 0.0,
+		"height": 500.0,
 		"last_filter": "",
 		"selected_items":
 		[
 		],
-		"width": 0.0
+		"width": 380.0
 	},
 	"select_symbol":
 	{
-		"height": 0.0,
+		"height": 400.0,
 		"last_filter": "",
 		"selected_items":
 		[
 		],
-		"width": 0.0
+		"width": 1230.0
 	},
 	"selected_group": 0,
 	"settings":
@@ -876,7 +1094,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 382.0,
+	"side_bar_width": 427.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
